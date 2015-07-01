@@ -1,0 +1,3 @@
+&test
+button#button_strip3.png#3
+background#button2.png#1

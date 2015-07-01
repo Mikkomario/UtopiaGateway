@@ -1,4 +1,4 @@
-package gateway_interface;
+package gateway_previous;
 
 import genesis_logic.AdvancedMouseListener;
 
@@ -22,7 +22,7 @@ import omega_world.RoomListener;
  * The class uses a sprite to draw itself though it doesn't handle animation
  *
  * @author Mikko Hilpinen.
- *         Created 30.11.2013.
+ * @since 30.11.2013.
  */
 public abstract class AbstractButton extends DimensionalDrawnObject implements 
 		AdvancedMouseListener, RoomListener
