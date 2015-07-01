@@ -52,6 +52,13 @@ public class SimplePlusMinusOption<T> extends AbstractPlusMinusOption<T>
 		this.textFont = font;
 	}
 	
+	@Override
+	protected Vector3D getRelativeOptionPosition()
+	{
+		return new Vector3D(super.getRelativeOptionPosition().getFirst(), 
+				getDimensions().getSecond() - getMargins().getSecond());
+	}
+	
 	
 	// IMPLEMENTED METHODS	--------------------------
 

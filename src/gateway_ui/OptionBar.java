@@ -126,6 +126,17 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 	}
 	
 	
+	// GETTERS & SETTERS 	------------------
+	
+	/**
+	 * @return The size of the bar
+	 */
+	public Vector3D getDimensions()
+	{
+		return this.dimensions;
+	}
+	
+	
 	// OTHER METHODS	----------------------
 	
 	/**
@@ -152,7 +163,7 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 			return;
 		
 		// Calculates the option's location (which is at the end of the bar)
-		Vector3D relativePos = new Vector3D(this.dimensions.getFirst() - 
+		Vector3D relativePos = new Vector3D(getDimensions().getFirst() - 
 				this.margins.getFirst() - this.options.getDimensions().getFirst(), 
 				this.margins.getSecond());
 		

@@ -64,7 +64,7 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 			this.previousButton.setDimensions(new Vector3D(
 					this.previousButton.getDimensions().getFirst(), maxHeight));
 		
-		this.dimensions = new Vector3D(width, maxHeight);
+		this.dimensions = new Vector3D(width, maxHeight + 2 * getMargins().getSecond());
 		
 		nextButton.getListenerHandler().add(this);
 		previousButton.getListenerHandler().add(this);
@@ -90,6 +90,8 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 		// Also scales the buttons
 		this.nextButton.scale(scale);
 		this.previousButton.scale(scale);
+		
+		updateButtonTransformations();
 	}
 
 	@Override
@@ -158,10 +160,10 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 	
 	private void updateButtonTransformations()
 	{
-		Vector3D relPosPrev = this.margins.plus(this.previousButton.getOrigin());
+		Vector3D relPosPrev = getMargins().plus(this.previousButton.getOrigin());
 		Vector3D relPosNext = new Vector3D(getDimensions().getFirst() - 
-				this.margins.getFirst(), this.margins.getSecond()).plus(
-				this.nextButton.getOrigin());
+				getMargins().getFirst() - this.nextButton.getDimensions().getFirst(), 
+				this.margins.getSecond()).plus(this.nextButton.getOrigin());
 		
 		// TODO: WET WET
 		this.previousButton.setTransformation(getTransformation().plus(

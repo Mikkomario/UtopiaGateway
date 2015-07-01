@@ -15,6 +15,7 @@ import gateway_ui.AbstractOption;
 import gateway_ui.MessageBox;
 import gateway_ui.MessageBoxSpriteBackground;
 import gateway_ui.OptionBar;
+import gateway_ui.OptionBarSpriteBackground;
 import gateway_ui.SimpleMessageBoxInputBar;
 import gateway_ui.SimplePlusMinusOption;
 import gateway_ui.TextDrawer;
@@ -105,11 +106,13 @@ public class GatewayTest
 		options.add("ultra");
 		AbstractOption<String> option = SimplePlusMinusOption.createOption(options, 1, 
 				DepthConstants.HUD - 1, handlers, SpriteBank.getSprite("test", "button"), 
-				SpriteBank.getSprite("test", "button"), 200, new Vector3D(10, 10), testFont, 
+				SpriteBank.getSprite("test", "button"), 300, new Vector3D(10, 5), testFont, 
 				Color.BLACK);
-		new OptionBar(new Vector3D(32, 500), "Texture Guality", new Vector3D(500, 64), 
+		OptionBar bar = new OptionBar(new Vector3D(32, 500), "Texture Guality", new Vector3D(500, 64), 
 				new Vector3D(10, 10), DepthConstants.HUD, testFont, Color.BLACK, 
-				handlers).setOptions(option);
+				handlers);
+		bar.setOptions(option);
+		new OptionBarSpriteBackground(bar, handlers, SpriteBank.getSprite("test", "background"));
 	}
 	
 	
