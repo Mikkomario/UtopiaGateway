@@ -95,10 +95,23 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 	@Override
 	public void onButtonEvent(ButtonEvent e)
 	{
+		// TODO: Causes a weird glitch
 		if (e.getSource().equals(this.previousButton.getButton()))
+		{
+			//if (isAtMax())
+			//	this.nextButton.getButton().getIsVisibleStateOperator().setState(true);
 			previous();
+			//if (isAtMin())
+			//	e.getSource().getIsVisibleStateOperator().setState(false);
+		}
 		else
+		{
+			//if (isAtMin())
+			//	this.previousButton.getButton().getIsVisibleStateOperator().setState(true);
 			next();
+			//if (isAtMax())
+			//	e.getSource().getIsVisibleStateOperator().setState(false);
+		}
 	}
 
 	@Override
@@ -121,6 +134,17 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 	}
 	
 	
+	// GETTERS & SETTERS	----------------
+	
+	/**
+	 * @return The margins inside the option
+	 */
+	public Vector3D getMargins()
+	{
+		return this.margins;
+	}
+	
+	
 	// OTHER METHODS	--------------------
 	
 	/**
@@ -128,7 +152,8 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 	 */
 	protected Vector3D getRelativeOptionPosition()
 	{
-		return this.margins.plus(this.previousButton.getDimensions());
+		return getMargins().plus(new Vector3D(this.previousButton.getDimensions().getFirst() + 
+				getMargins().getFirst(), 0));
 	}
 	
 	private void updateButtonTransformations()
@@ -140,10 +165,10 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 		
 		// TODO: WET WET
 		this.previousButton.setTransformation(getTransformation().plus(
-				Transformation.transitionTransformation(getTransformation().transform(
-				relPosPrev))));
+				Transformation.transitionTransformation(getTransformation().withPosition(
+				Vector3D.zeroVector()).transform(relPosPrev))));
 		this.nextButton.setTransformation(getTransformation().plus(
-				Transformation.transitionTransformation(getTransformation().transform(
-				relPosNext))));
+				Transformation.transitionTransformation(getTransformation().withPosition(
+				Vector3D.zeroVector()).transform(relPosNext))));
 	}
 }

@@ -2,6 +2,8 @@ package gateway_test;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
 
 import omega_util.SimpleGameObject;
 import omega_util.Transformable;
@@ -9,9 +11,12 @@ import omega_util.Transformation;
 import gateway_event.ButtonEvent;
 import gateway_event.ButtonEventListener;
 import gateway_ui.AbstractButton;
+import gateway_ui.AbstractOption;
 import gateway_ui.MessageBox;
 import gateway_ui.MessageBoxSpriteBackground;
+import gateway_ui.OptionBar;
 import gateway_ui.SimpleMessageBoxInputBar;
+import gateway_ui.SimplePlusMinusOption;
 import gateway_ui.TextDrawer;
 import gateway_ui.SingleSpriteButton;
 import genesis_event.DrawableHandler;
@@ -60,7 +65,7 @@ public class GatewayTest
 		ResourceActivator.startPhase(GamePhaseBank.getGamePhase("phase1"), true);
 		
 		// Creates the window & panel
-		GameWindow window = new GameWindow(new Vector3D(500, 500), "Gateway test", true, 
+		GameWindow window = new GameWindow(new Vector3D(800, 600), "Gateway test", true, 
 				120, 20);
 		GamePanel panel = window.getMainPanel().addGamePanel();
 		
@@ -92,6 +97,19 @@ public class GatewayTest
 				Color.BLACK);
 		//new SpriteMessageBoxInputBar(box, new Vector3D(10, 12), testFont, Color.WHITE, 
 		//		15, SpriteBank.getSprite("test", "button"));
+		
+		List<String> options = new ArrayList<>();
+		options.add("low");
+		options.add("medium");
+		options.add("high");
+		options.add("ultra");
+		AbstractOption<String> option = SimplePlusMinusOption.createOption(options, 1, 
+				DepthConstants.HUD - 1, handlers, SpriteBank.getSprite("test", "button"), 
+				SpriteBank.getSprite("test", "button"), 200, new Vector3D(10, 10), testFont, 
+				Color.BLACK);
+		new OptionBar(new Vector3D(32, 500), "Texture Guality", new Vector3D(500, 64), 
+				new Vector3D(10, 10), DepthConstants.HUD, testFont, Color.BLACK, 
+				handlers).setOptions(option);
 	}
 	
 	

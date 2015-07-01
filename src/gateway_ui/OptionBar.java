@@ -43,16 +43,21 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 	 * @param dimensions The bar's dimensions
 	 * @param margins The margins placed inside the bar
 	 * @param drawingDepth The drawing depth of the bar
+	 * @param font The font used when drawing the description
+	 * @param textColor The color used when drawing the description
 	 * @param handlers The handlers that will handle the bar
 	 */
 	public OptionBar(Vector3D position, String description, Vector3D dimensions, 
-			Vector3D margins, int drawingDepth, HandlerRelay handlers)
+			Vector3D margins, int drawingDepth, Font font, Color textColor, 
+			HandlerRelay handlers)
 	{
 		super(handlers);
 		
 		this.transformation = new Transformation(position);
 		this.description = description;
 		this.margins = margins;
+		this.textColor = textColor;
+		this.textFont = font;
 		this.dimensions = dimensions;
 		this.depth = drawingDepth;
 		this.isVisibleOperator = new StateOperator(true, true);
@@ -82,8 +87,7 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 	@Override
 	public void drawSelf(Graphics2D g2d)
 	{
-		AffineTransform lastTransform = g2d.getTransform();
-		getTransformation().transform(g2d);
+		AffineTransform lastTransform = getTransformation().transform(g2d);
 		
 		// Draws the description
 		g2d.setFont(this.textFont);
@@ -125,10 +129,10 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 	// OTHER METHODS	----------------------
 	
 	/**
-	 * Adds a set of options to the bar
+	 * Adds an option component to the bar
 	 * @param options The options that will be added to the bar
 	 */
-	public void addOptions(AbstractOption<?> options)
+	public void setOptions(AbstractOption<?> options)
 	{
 		this.options = options;
 		
@@ -138,6 +142,8 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 		
 		this.options.setDimensions(new Vector3D(width, this.dimensions.getSecond() - 
 				2 * this.margins.getSecond()));
+		
+		updateOptionTransformations();
 	}
 	
 	private void updateOptionTransformations()
@@ -151,7 +157,8 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 				this.margins.getSecond());
 		
 		this.options.setTrasformation(getTransformation().plus(
-				Transformation.transitionTransformation(getTransformation().transform(
+				Transformation.transitionTransformation(
+				getTransformation().withPosition(Vector3D.zeroVector()).transform(
 				relativePos))));
 	}
 }

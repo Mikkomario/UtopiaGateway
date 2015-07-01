@@ -152,28 +152,47 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 	
 	/**
 	 * Changes the currently chosen option
-	 * @param newIndex The index of the new choise
+	 * @param newIndex The index of the new choice
+	 * @return The given index became the new index
 	 */
-	public void setCurrentIndex(int newIndex)
+	public boolean setCurrentIndex(int newIndex)
 	{
 		this.currentIndex = newIndex;
-		checkIndex();
+		return !checkIndex();
 	}
 	
 	/**
 	 * Chooses the next possible option (one right)
+	 * @return Was the operation successful
 	 */
-	protected void next()
+	protected boolean next()
 	{
-		setCurrentIndex(getCurrentIndex() + 1);
+		return setCurrentIndex(getCurrentIndex() + 1);
 	}
 	
 	/**
 	 * Chooses the previous possible option (one left)
+	 * @return Was the operation successful
 	 */
-	protected void previous()
+	protected boolean previous()
 	{
-		setCurrentIndex(getCurrentIndex() - 1);
+		return setCurrentIndex(getCurrentIndex() - 1);
+	}
+	
+	/**
+	 * @return Is the currently chosen option farthest to the right
+	 */
+	protected boolean isAtMax()
+	{
+		return getCurrentIndex() >= getOptionAmount() - 1;
+	}
+	
+	/**
+	 * @return Is the currently chosen option farthest to the left
+	 */
+	protected boolean isAtMin()
+	{
+		return getCurrentIndex() <= 0;
 	}
 	
 	/**
@@ -184,12 +203,20 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 		return this.currentIndex;
 	}
 	
-	private void checkIndex()
+	private boolean checkIndex()
 	{
 		if (this.currentIndex < 0)
+		{
 			this.currentIndex = 0;
+			return true;
+		}
 		else if (this.currentIndex >= getOptionAmount())
+		{
 			this.currentIndex = getOptionAmount() - 1;
+			return true;
+		}
+		
+		return false;
 	}
 	
 	
