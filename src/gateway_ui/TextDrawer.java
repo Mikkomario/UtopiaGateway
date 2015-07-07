@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import omega_util.SimpleGameObject;
-import omega_util.Transformable;
 import omega_util.Transformation;
 
 /**
@@ -30,15 +29,16 @@ import omega_util.Transformation;
  * @author Mikko Hilpinen
  * @since 12.3.2014
  */
-public class TextDrawer extends SimpleGameObject implements Drawable, Transformable
+public class TextDrawer extends SimpleGameObject implements Drawable, UIComponent
 {
 	// ATTRIBUTES	------------------------------------------------------
 	
 	private List<ParagraphDrawer> paragraphs;
 	private Font font;
 	private Color color;
-	private int areaWidth, depth;
+	private int depth;
 	private String paragraphSeparator;
+	private Vector3D dimensions, margins;
 	
 	private Transformation transformation;
 	private StateOperator isVisibleOperator;
@@ -56,12 +56,14 @@ public class TextDrawer extends SimpleGameObject implements Drawable, Transforma
 	 * only a single paragraph is used)
 	 * @param font The font with which the text will be drawn
 	 * @param textColor The color with which the text will be drawn
-	 * @param textAreaWidth The width of the area the text will cover
+	 * @param dimensions The size of the area on which the text is displayed, including 
+	 * margins. The real text area may be higher or lower depending on the text amount.
+	 * @param margins The margins placed inside the text area
 	 * @param initialDrawingDepth The drawing depth used for drawing the text
 	 * @param handlers The handlers that will handle the drawer
 	 */
 	public TextDrawer(Vector3D position, String text, String paragraphSeparator, Font font, 
-			Color textColor, int textAreaWidth, 
+			Color textColor, Vector3D dimensions, Vector3D margins, 
 			int initialDrawingDepth, HandlerRelay handlers)
 	{	
 		super(handlers);
@@ -70,7 +72,8 @@ public class TextDrawer extends SimpleGameObject implements Drawable, Transforma
 		this.depth = initialDrawingDepth;
 		this.font = font;
 		this.color = textColor;
-		this.areaWidth = textAreaWidth;
+		this.dimensions = dimensions;
+		this.margins = margins;
 		this.transformation = new Transformation(position);
 		this.isVisibleOperator = new StateOperator(true, true);
 		this.paragraphSeparator = paragraphSeparator;
@@ -107,10 +110,10 @@ public class TextDrawer extends SimpleGameObject implements Drawable, Transforma
 		
 		g2d.setColor(this.color);
 		
-		int h = 0;
+		int h = this.margins.getSecondInt();
 		for (ParagraphDrawer paragraph : this.paragraphs)
 		{
-			h += paragraph.drawText(g2d, 0, h) + 10;
+			h += paragraph.drawText(g2d, this.margins.getFirstInt(), h) + 10;
 		}
 		
 		g2d.setTransform(lastTransform);
@@ -126,6 +129,18 @@ public class TextDrawer extends SimpleGameObject implements Drawable, Transforma
 	public StateOperator getIsVisibleStateOperator()
 	{
 		return this.isVisibleOperator;
+	}
+	
+	@Override
+	public Vector3D getDimensions()
+	{
+		return this.dimensions;
+	}
+
+	@Override
+	public Vector3D getOrigin()
+	{
+		return Vector3D.zeroVector();
 	}
 
 	
@@ -153,12 +168,21 @@ public class TextDrawer extends SimpleGameObject implements Drawable, Transforma
 	}
 	
 	/**
-	 * Changes the width of the text area
-	 * @param width The text area's new width
+	 * Changes the size of the text area
+	 * @param newDimensions The new size of the area
 	 */
-	public void setWidth(int width)
+	public void setDimensions(Vector3D newDimensions)
 	{
-		this.areaWidth = width;
+		this.dimensions = newDimensions;
+	}
+	
+	/**
+	 * Changes the operator that defines whether or not the drawer is visible
+	 * @param operator The new operator used
+	 */
+	public void setIsVisibleStateOperator(StateOperator operator)
+	{
+		this.isVisibleOperator = operator;
 	}
 	
 	
@@ -198,13 +222,11 @@ public class TextDrawer extends SimpleGameObject implements Drawable, Transforma
 			FontRenderContext frc = g2d.getFontRenderContext();
 			LineBreakMeasurer measurer = new LineBreakMeasurer(this.styledTextIterator, frc);
 			
-			float wrappingWidth = TextDrawer.this.areaWidth;
+			float wrappingWidth = getDimensions().getFirstInt() - 2 * 
+					TextDrawer.this.margins.getFirstInt();
 			
 			while (measurer.getPosition() < this.text.length())
 			{
-				// TODO: Throws errors when the transformation gets negative
-				// TODO: Also, the text layout changes when scaling, which can be a bug as well 
-				// as a feature
 				TextLayout layout = measurer.nextLayout(wrappingWidth);
 			
 				// TODO: May randomly throw a nullPointerException

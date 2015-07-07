@@ -13,10 +13,8 @@ import genesis_event.HandlerRelay;
 import genesis_util.DependentStateOperator;
 import genesis_util.DepthConstants;
 import genesis_util.StateOperator;
-import genesis_util.StateOperatorListener;
 import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
-import omega_util.Transformable;
 import omega_util.Transformation;
 import vision_sprite.Sprite;
 
@@ -26,8 +24,7 @@ import vision_sprite.Sprite;
  * @author Mikko Hilpinen
  * @since 28.6.2015
  */
-public class MessageBox extends SimpleGameObject implements Transformable, 
-		StateOperatorListener, ButtonEventListener
+public class MessageBox extends SimpleGameObject implements ButtonEventListener, UIComponent
 {
 	// ATTRIBUTES	------------------------
 	
@@ -38,7 +35,7 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 	private Color textColor;
 	private List<OptionButton> buttons;
 	private HandlerRelay handlers;
-	private AbstractMessageBoxInputBar inputBar;
+	private InputBar inputBar;
 	
 	private StateOperator isVisibleOperator;
 	private EventSelector<ButtonEvent> selector;
@@ -75,17 +72,15 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		this.selector = ButtonEvent.createButtonEventSelector(ButtonEventType.RELEASED);
 		this.buttonFont = buttonFont;
 		this.textColor = textColor;
-		this.textDrawer = new TextDrawer(position.plus(margin), message, paragraphSeparator, 
-				font, textColor, dimensions.getFirstInt() - 2 * margin.getFirstInt(), 
-				getDepth() - 2, handlers);
+		this.textDrawer = new TextDrawer(position, message, paragraphSeparator, buttonFont, 
+				textColor, dimensions, margin, getDepth() - 2, handlers);
 		
 		this.textDrawer.setIsDeadStateOperator(new DependentStateOperator(
 				getIsDeadStateOperator()));
 		this.textDrawer.setIsActiveStateOperator(new DependentStateOperator(
 				getIsActiveStateOperator()));
-		
-		// Listens to its own state to inform the components as well
-		getIsVisibleStateOperator().getListenerHandler().add(this);
+		this.textDrawer.setIsVisibleStateOperator(new DependentStateOperator(
+				getIsVisibleStateOperator()));
 	}
 	
 	
@@ -101,25 +96,9 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 	public void setTrasformation(Transformation t)
 	{
 		this.transformation = t;
-		
-		Vector3D absTextPosition = t.getPosition().plus(t.transform(this.margin));
-		this.textDrawer.setTrasformation(t.withPosition(absTextPosition));
+		this.textDrawer.setTrasformation(t);
 		
 		updateInputBarTransformations();
-	}
-
-	@Override
-	public void onStateChange(StateOperator source, boolean newState)
-	{
-		// The boxes state also affects the text and the buttons
-		if (source.equals(getIsVisibleStateOperator()))
-		{
-			this.textDrawer.getIsVisibleStateOperator().setState(newState);
-			for (OptionButton button : this.buttons)
-			{
-				button.setVisibleState(newState);
-			}
-		}
 	}
 	
 	@Override
@@ -141,24 +120,32 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		return this.selector;
 	}
 	
-	
-	// GETTERS & SETTERS	----------------------
-	
-	/**
-	 * @return The operator that defines whether the box is visible or not
-	 */
+	@Override
 	public StateOperator getIsVisibleStateOperator()
 	{
 		return this.isVisibleOperator;
 	}
 	
-	/**
-	 * @return The dimensions of the box (before any transformations are applied)
-	 */
-	public Vector3D getRelativeDimensions()
+	@Override
+	public Vector3D getDimensions()
 	{
 		return this.dimensions;
 	}
+
+	@Override
+	public Vector3D getOrigin()
+	{
+		return Vector3D.zeroVector();
+	}
+	
+	@Override
+	public int getDepth()
+	{
+		return DepthConstants.TOP + 10;
+	}
+	
+	
+	// GETTERS & SETTERS	----------------------
 	
 	/**
 	 * @return The handlers used for handling this box
@@ -172,14 +159,6 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 	// OTHER METHODS	--------------------------
 	
 	/**
-	 * @return The drawing depth of the box (and it's components)
-	 */
-	public int getDepth()
-	{
-		return DepthConstants.TOP + 10;
-	}
-	
-	/**
 	 * Adds a button to the box
 	 * @param button The button that will be added to the box
 	 * @param buttonMargins The margins inside the button
@@ -190,7 +169,7 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 			boolean killOnRelease)
 	{
 		// Calculates the new button size
-		int buttonWidth = (this.dimensions.getFirstInt() - this.margin.getFirstInt() * (2 + 
+		int buttonWidth = (getDimensions().getFirstInt() - this.margin.getFirstInt() * (2 + 
 				this.buttons.size())) / (this.buttons.size() + 1);
 		
 		// Finds out the highest button size
@@ -200,7 +179,7 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		
 		// Repositions the buttons
 		Vector3D nextPosition = new Vector3D(this.margin.getFirst(), 
-				this.dimensions.getSecond() - this.margin.getSecond() - maxButtonHeight);
+				getDimensions().getSecond() - this.margin.getSecond() - maxButtonHeight);
 		for (OptionButton b : this.buttons)
 		{
 			nextPosition = nextPosition.plus(new Vector3D(b.reset(nextPosition, buttonWidth) + 
@@ -218,6 +197,7 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		// The new button's state becomes dependent from the box
 		button.setIsActiveStateOperator(new DependentStateOperator(getIsActiveStateOperator()));
 		button.setIsDeadStateOperator(new DependentStateOperator(getIsDeadStateOperator()));
+		button.setIsVisibleStateOperator(new DependentStateOperator(getIsVisibleStateOperator()));
 		
 		// Also updates the input bar
 		updateInputBarTransformations();
@@ -245,12 +225,14 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 	/**
 	 * Adds a new input bar to the message box, removing the previous one
 	 * @param inputBar The new input bar that will be placed in the box
+	 * @param killPrevious Should the previous input bar (if any) be killed in the process
 	 */
-	public void addInputBar(AbstractMessageBoxInputBar inputBar)
+	public void addInputBar(InputBar inputBar, boolean killPrevious)
 	{
 		if (inputBar == null && this.inputBar != null)
 		{
-			this.inputBar.separate();
+			if (killPrevious)
+				this.inputBar.getIsDeadStateOperator().setState(true);
 			this.inputBar = null;
 			return;
 		}
@@ -259,12 +241,17 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 			return;
 		
 		// Destroys the old bar if there is one
-		if (this.inputBar != null)
-			this.inputBar.separate();
+		if (this.inputBar != null && killPrevious)
+			this.inputBar.getIsDeadStateOperator().setState(true);
 		
 		this.inputBar = inputBar;
-		inputBar.setWidth(this.dimensions.getFirstInt() - this.margin.getFirstInt() * 2);
-	
+		inputBar.setDimensions(new Vector3D(getDimensions().getFirstInt() - 
+				this.margin.getFirstInt() * 2, inputBar.getDimensions().getSecond()));
+		inputBar.setIsActiveStateOperator(new DependentStateOperator(getIsActiveStateOperator()));
+		inputBar.setIsDeadStateOperator(new DependentStateOperator(getIsDeadStateOperator()));
+		inputBar.setIsVisibleStateOperator(new DependentStateOperator(getIsVisibleStateOperator()));
+		inputBar.setDepth(getDepth() - 4);
+		
 		updateInputBarTransformations();
 	}
 	
@@ -283,7 +270,8 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 			fromBottom = this.margin.getSecondInt() * 2 + buttonHeight;
 		
 		Vector3D relativeBarPosition = new Vector3D(this.margin.getFirst(), 
-				this.dimensions.getSecond() - fromBottom - this.inputBar.getHeight());
+				getDimensions().getSecond() - fromBottom - 
+				this.inputBar.getDimensions().getSecond());
 		Vector3D absoluteBarPosition = getTransformation().transform(relativeBarPosition);
 		
 		// Applies transformations
@@ -310,7 +298,7 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		// ATTRIBUTES	--------------------------
 		
 		private AbstractButton button;
-		private Vector3D margins, relativePosition, scaling;
+		private Vector3D relativePosition, scaling;
 		private TextDrawer text;
 		
 		
@@ -321,18 +309,20 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		{
 			this.scaling = new Vector3D(1, 1);
 			this.button = button;
-			this.margins = margin;
 			this.text = new TextDrawer(Vector3D.zeroVector(), message, null, 
-					MessageBox.this.buttonFont, MessageBox.this.textColor, getTextAreaWidth(), 
-					getDepth() - 2, MessageBox.this.handlers);
+					MessageBox.this.buttonFont, MessageBox.this.textColor, getDimensions(), 
+					margin, getDepth() - 2, MessageBox.this.handlers);
 			
 			StateOperator dependentActive = new DependentStateOperator(
 					getIsActiveStateOperator());
 			StateOperator dependentDead = new DependentStateOperator(getIsDeadStateOperator());
+			StateOperator dependentVisible = new DependentStateOperator(getIsVisibleStateOperator());
 			this.button.setIsActiveStateOperator(dependentActive);
 			this.button.setIsDeadStateOperator(dependentDead);
+			this.button.setIsVisibleStateOperator(dependentVisible);
 			this.text.setIsActiveStateOperator(dependentActive);
 			this.text.setIsDeadStateOperator(dependentDead);
+			this.text.setIsVisibleStateOperator(dependentVisible);
 			
 			reset(relativePosition, maxWidth);
 		}
@@ -365,17 +355,11 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 			//	this.scaling = new Vector3D(1, 1);
 			//else
 			this.scaling = new Vector3D(maxWidth / this.button.getDimensions().getFirst(), 1);
-			this.text.setWidth(getTextAreaWidth());
+			this.text.setDimensions(getDimensions());
 			
 			updateTransformation();
 			
 			return this.button.getDimensions().getFirst() * this.scaling.getFirst();
-		}
-		
-		public void setVisibleState(boolean newState)
-		{
-			this.button.getIsVisibleStateOperator().setState(newState);
-			this.text.getIsVisibleStateOperator().setState(newState);
 		}
 		
 		private Vector3D getAbsoluteButtonPosition()
@@ -386,13 +370,7 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		
 		private Vector3D getAbsoluteTextPosition()
 		{
-			return getTransformation().transform(this.relativePosition.plus(
-					this.margins.times(this.scaling)));
-		}
-		
-		private int getTextAreaWidth()
-		{
-			return getDimensions().getFirstInt() - this.margins.getFirstInt() * 2;
+			return getTransformation().transform(this.relativePosition);
 		}
 	}
 }

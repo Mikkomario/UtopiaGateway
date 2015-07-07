@@ -11,7 +11,6 @@ import genesis_util.DependentStateOperator;
 import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
-import omega_util.Transformable;
 import omega_util.Transformation;
 
 /**
@@ -19,7 +18,7 @@ import omega_util.Transformation;
  * @author Mikko Hilpinen
  * @since 29.6.2015
  */
-public class OptionBar extends SimpleGameObject implements Drawable, Transformable
+public class OptionBar extends SimpleGameObject implements Drawable, UIComponent
 {
 	// ATTRIBUTES	----------------------
 	
@@ -105,12 +104,13 @@ public class OptionBar extends SimpleGameObject implements Drawable, Transformab
 		return this.isVisibleOperator;
 	}
 	
+	@Override
+	public Vector3D getOrigin()
+	{
+		return Vector3D.zeroVector();
+	}
 	
-	// GETTERS & SETTERS 	------------------
-	
-	/**
-	 * @return The size of the bar
-	 */
+	@Override
 	public Vector3D getDimensions()
 	{
 		return this.dimensions;

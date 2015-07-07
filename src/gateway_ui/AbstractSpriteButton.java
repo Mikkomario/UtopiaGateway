@@ -32,7 +32,7 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	public AbstractSpriteButton(Vector3D position, HandlerRelay handlers, 
 			SpriteDrawerType drawer, int initialDepth)
 	{
-		super(position, handlers);
+		super(position, handlers, initialDepth);
 		
 		this.drawer = new DependentSpriteDrawer<>(this, initialDepth, drawer, handlers);
 		this.isVisibleOperator = new StateOperator(true, true);
@@ -69,6 +69,18 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	public Vector3D getOrigin()
 	{
 		return getSpriteDrawer().getOrigin();
+	}
+	
+	@Override
+	public void setIsVisibleStateOperator(StateOperator operator)
+	{
+		this.isVisibleOperator = operator;
+	}
+	
+	@Override
+	public int getDepth()
+	{
+		return getDrawer().getDepth();
 	}
 
 	

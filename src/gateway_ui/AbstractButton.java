@@ -15,7 +15,6 @@ import genesis_event.MouseEvent.MouseMovementEventType;
 import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
-import omega_util.Transformable;
 import omega_util.Transformation;
 
 /**
@@ -23,7 +22,7 @@ import omega_util.Transformation;
  * @author Mikko Hilpinen
  * @since 6.6.2015
  */
-public abstract class AbstractButton extends SimpleGameObject implements Transformable,
+public abstract class AbstractButton extends SimpleGameObject implements UIComponent,
 		MouseListener
 {
 	// ATTRIBUTES	--------------------------
@@ -33,6 +32,7 @@ public abstract class AbstractButton extends SimpleGameObject implements Transfo
 	private ButtonEventHandler listenerHandler;
 	private ButtonStatus status;
 	private Transformation transformation;
+	private int drawingDepth;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -41,8 +41,9 @@ public abstract class AbstractButton extends SimpleGameObject implements Transfo
 	 * Creates a new button
 	 * @param position The button's original position
 	 * @param handlers The handlers that will handle the button
+	 * @param drawingDepth The drawing depth used when drawing the button
 	 */
-	public AbstractButton(Vector3D position, HandlerRelay handlers)
+	public AbstractButton(Vector3D position, HandlerRelay handlers, int drawingDepth)
 	{
 		super(handlers);
 		
@@ -59,6 +60,7 @@ public abstract class AbstractButton extends SimpleGameObject implements Transfo
 				MouseEvent.createButtonStateChangeSelector();
 		leftStateChange.addRequiredFeature(MouseButton.LEFT);
 		selector.addOption(leftStateChange);
+		this.drawingDepth = drawingDepth;
 		
 		this.selector = selector;
 	}
@@ -67,25 +69,16 @@ public abstract class AbstractButton extends SimpleGameObject implements Transfo
 	// ABSTRACT METHODS	------------------------
 	
 	/**
-	 * @return An operator that defines whether the button is visible or not
-	 */
-	public abstract StateOperator getIsVisibleStateOperator();
-	
-	/**
 	 * Changes the button's visual to represent the given button status
 	 * @param status The button's new status that should be visually indicated.
 	 */
 	protected abstract void changeVisualStyle(ButtonStatus status);
 	
 	/**
-	 * @return The size of the button before any transformations are applied
+	 * Changes the operator that defines whether or not the button is visible
+	 * @param operator The operator that will define the button's visibility
 	 */
-	public abstract Vector3D getDimensions();
-	
-	/**
-	 * @return The relative origin coordinates of the button
-	 */
-	public abstract Vector3D getOrigin();
+	public abstract void setIsVisibleStateOperator(StateOperator operator);
 	
 	
 	// IMPLEMENTED METHODS	------------------
@@ -146,6 +139,12 @@ public abstract class AbstractButton extends SimpleGameObject implements Transfo
 	public void setTrasformation(Transformation t)
 	{
 		this.transformation = t;
+	}
+	
+	@Override
+	public int getDepth()
+	{
+		return this.drawingDepth;
 	}
 	
 	

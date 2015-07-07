@@ -5,30 +5,18 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-import omega_util.SimpleGameObject;
-import omega_util.Transformable;
-import omega_util.Transformation;
-import gateway_event.ButtonEvent;
-import gateway_event.ButtonEventListener;
-import gateway_ui.AbstractButton;
 import gateway_ui.AbstractOption;
+import gateway_ui.InputBar;
 import gateway_ui.MessageBox;
+import gateway_ui.RectangleUIComponentBackground;
 import gateway_ui.SpriteUIComponentBackground;
 import gateway_ui.OptionBar;
-import gateway_ui.OptionBarSpriteBackground;
-import gateway_ui.SimpleMessageBoxInputBar;
 import gateway_ui.SimplePlusMinusOption;
-import gateway_ui.TextDrawer;
-import gateway_ui.SingleSpriteButton;
 import genesis_event.DrawableHandler;
-import genesis_event.EventSelector;
 import genesis_event.HandlerRelay;
 import genesis_event.KeyListenerHandler;
-import genesis_event.MouseEvent;
-import genesis_event.MouseListener;
 import genesis_event.MouseListenerHandler;
 import genesis_util.DepthConstants;
-import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 import genesis_video.GamePanel;
 import genesis_video.GameWindow;
@@ -77,11 +65,12 @@ public class GatewayTest
 		handlers.addHandler(new KeyListenerHandler(false, window.getHandlerRelay()));
 		
 		// Creates the objects
+		/*
 		AbstractButton button = new SingleSpriteButton(new Vector3D(100, 100), 
 				DepthConstants.HUD, SpriteBank.getSprite("test", "button"), handlers);
 		new TestButtonListener(handlers, button);
-		
-		new MouseTextDrawer(handlers);
+		*/
+		//new MouseTextDrawer(handlers);
 		//new InputDrawer(handlers);
 		
 		Font testFont = new Font(Font.SERIF, Font.BOLD, 14);
@@ -89,13 +78,18 @@ public class GatewayTest
 		MessageBox box = new MessageBox(new Vector3D(50, 200), new Vector3D(300, 200), 
 				new Vector3D(20, 10), "This is an awesome message box!#Yay :)", "#", 
 				testFont, testFont, Color.BLACK, handlers);
-		new SpriteUIComponentBackground(box, SpriteBank.getSprite("test", "background"));
+		new SpriteUIComponentBackground(box, handlers, 
+				SpriteBank.getSprite("test", "background"));
+		
 		box.addButton(SpriteBank.getSprite("test", "button"), new Vector3D(10, 10), 
 				"Button 1", true);
 		box.addButton(SpriteBank.getSprite("test", "button"), new Vector3D(10, 10), 
 				"Button 2", true);
-		new SimpleMessageBoxInputBar(box, new Vector3D(10, 12), 15, testFont, Color.WHITE, 
-				Color.BLACK);
+		
+		InputBar inputBar = new InputBar(handlers, new Vector3D(10, 3), new Vector3D(100, 15), 
+				testFont, Color.WHITE, 0);
+		new RectangleUIComponentBackground(inputBar, handlers, Color.WHITE, Color.BLACK);
+		box.addInputBar(inputBar, false);
 		//new SpriteMessageBoxInputBar(box, new Vector3D(10, 12), testFont, Color.WHITE, 
 		//		15, SpriteBank.getSprite("test", "button"));
 		
@@ -108,16 +102,20 @@ public class GatewayTest
 				DepthConstants.HUD - 1, handlers, SpriteBank.getSprite("test", "button"), 
 				SpriteBank.getSprite("test", "button"), 200, new Vector3D(10, 5), testFont, 
 				Color.BLACK);
+		new RectangleUIComponentBackground(option, handlers, Color.BLACK, null);
+		
 		OptionBar bar = new OptionBar(new Vector3D(32, 500), "Texture Guality", new Vector3D(500, 64), 
 				new Vector3D(10, 10), DepthConstants.HUD, testFont, Color.BLACK, 
 				handlers);
 		bar.setOptions(option);
-		new OptionBarSpriteBackground(bar, handlers, SpriteBank.getSprite("test", "background"));
+		//new OptionBarSpriteBackground(bar, handlers, SpriteBank.getSprite("test", "background"));
+		new RectangleUIComponentBackground(bar, handlers, Color.BLACK, null);
 	}
 	
 	
 	// SUBCLASSES	-------------------------
 	
+	/*
 	private static class TestButtonListener extends SimpleGameObject implements ButtonEventListener
 	{
 		// ATTRIBUTES	---------------------
@@ -157,7 +155,9 @@ public class GatewayTest
 			return this.selector;
 		}
 	}
+	*/
 	
+	/*
 	private static class MouseTextDrawer extends SimpleGameObject implements MouseListener
 	{
 		// ATTRIBUTES	---------------------
@@ -210,6 +210,7 @@ public class GatewayTest
 						event.getPosition()).withScaling(event.getPosition().dividedBy(200)));
 		}
 	}
+	*/
 	
 	/*
 	private static class InputDrawer extends SimpleGameObject implements Drawable

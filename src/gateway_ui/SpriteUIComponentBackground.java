@@ -19,6 +19,7 @@ public class SpriteUIComponentBackground extends UIComponentBackground
 	// ATTRIBUTES	--------------------------
 	
 	private SingleSpriteDrawer drawer;
+	private Vector3D lastOrigin, lastDimensions;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -37,7 +38,9 @@ public class SpriteUIComponentBackground extends UIComponentBackground
 		
 		this.drawer = new SingleSpriteDrawer(
 				sprite.withDimensions(master.getDimensions()), this, handlers);
-		this.drawer.setOrigin(Vector3D.zeroVector());
+		this.drawer.setOrigin(master.getOrigin());
+		this.lastOrigin = master.getOrigin();
+		this.lastDimensions = master.getDimensions();
 	}
 	
 	
@@ -46,6 +49,15 @@ public class SpriteUIComponentBackground extends UIComponentBackground
 	@Override
 	public void drawSelf(Graphics2D g2d)
 	{
+		// Updates the dimensions & origin, if necessary
+		if (!this.lastDimensions.equalsIn2D(getMaster().getDimensions()))
+			updateDimensions();
+		if (!this.lastOrigin.equalsIn2D(getMaster().getOrigin()))
+		{
+			this.drawer.setOrigin(getMaster().getOrigin());
+			this.lastOrigin = getMaster().getOrigin();
+		}
+		
 		// Draws the sprite transformed accordingly
 		AffineTransform lastTransform = getMaster().getTransformation().transform(g2d);
 		
@@ -78,9 +90,10 @@ public class SpriteUIComponentBackground extends UIComponentBackground
 	/**
 	 * Updates the background's size in case the component's dimensions changed.
 	 */
-	public void updateDimensions()
+	private void updateDimensions()
 	{
 		this.drawer.setSprite(this.drawer.getSprite().withDimensions(
 				getMaster().getDimensions()));
+		this.lastDimensions = getMaster().getDimensions();
 	}
 }

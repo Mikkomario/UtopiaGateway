@@ -11,7 +11,6 @@ import genesis_util.StateOperator;
 import genesis_util.StateOperatorListener;
 import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
-import omega_util.Transformable;
 import omega_util.Transformation;
 
 /**
@@ -20,7 +19,7 @@ import omega_util.Transformation;
  * @param <T> The type of option chosen in this element
  * @since 29.6.2015
  */
-public abstract class AbstractOption<T> extends SimpleGameObject implements Transformable,
+public abstract class AbstractOption<T> extends SimpleGameObject implements UIComponent,
 		Drawable
 {
 	// ATTRIBUTES	------------------------
@@ -59,11 +58,6 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 	// ABSTRACT METHODS	-------------------
 	
 	/**
-	 * @return The size of the options before any transformations are applied
-	 */
-	public abstract Vector3D getDimensions();
-	
-	/**
 	 * Changes the size of the option
 	 * @param newDimensions The new size of the option
 	 */
@@ -94,6 +88,12 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 	public void setTrasformation(Transformation t)
 	{
 		this.transformation = t;
+	}
+	
+	@Override
+	public Vector3D getOrigin()
+	{
+		return Vector3D.zeroVector();
 	}
 	
 	
