@@ -17,6 +17,7 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	// ATTRIBUTES	------------------------
 	
 	private DependentSpriteDrawer<AbstractButton, SpriteDrawerType> drawer;
+	private StateOperator isVisibleOperator;
 	
 	
 	// CONSTRUCTOR	------------------------
@@ -34,6 +35,8 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 		super(position, handlers);
 		
 		this.drawer = new DependentSpriteDrawer<>(this, initialDepth, drawer, handlers);
+		this.isVisibleOperator = new StateOperator(true, true);
+		getDrawer().setIsVisibleOperator(getIsVisibleStateOperator());
 	}
 	
 	
@@ -53,7 +56,7 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	@Override
 	public StateOperator getIsVisibleStateOperator()
 	{
-		return getDrawer().getIsVisibleStateOperator();
+		return this.isVisibleOperator;
 	}
 	
 	@Override

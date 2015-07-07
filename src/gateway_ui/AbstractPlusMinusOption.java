@@ -88,8 +88,8 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 		this.dimensions = newDimensions;
 		
 		// Also scales the buttons
-		this.nextButton.scale(scale);
-		this.previousButton.scale(scale);
+		this.nextButton.scale(scale, true);
+		this.previousButton.scale(scale, true);
 		
 		updateButtonTransformations();
 	}
@@ -97,22 +97,21 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 	@Override
 	public void onButtonEvent(ButtonEvent e)
 	{
-		// TODO: Causes a weird glitch
 		if (e.getSource().equals(this.previousButton.getButton()))
 		{
-			//if (isAtMax())
-			//	this.nextButton.getButton().getIsVisibleStateOperator().setState(true);
+			if (isAtMax())
+				this.nextButton.getButton().getIsVisibleStateOperator().setState(true);
 			previous();
-			//if (isAtMin())
-			//	e.getSource().getIsVisibleStateOperator().setState(false);
+			if (isAtMin())
+				e.getSource().getIsVisibleStateOperator().setState(false);
 		}
 		else
 		{
-			//if (isAtMin())
-			//	this.previousButton.getButton().getIsVisibleStateOperator().setState(true);
+			if (isAtMin())
+				this.previousButton.getButton().getIsVisibleStateOperator().setState(true);
 			next();
-			//if (isAtMax())
-			//	e.getSource().getIsVisibleStateOperator().setState(false);
+			if (isAtMax())
+				e.getSource().getIsVisibleStateOperator().setState(false);
 		}
 	}
 

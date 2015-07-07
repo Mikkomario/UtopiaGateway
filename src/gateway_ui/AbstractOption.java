@@ -6,6 +6,7 @@ import java.util.List;
 
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
+import genesis_util.DependentStateOperator;
 import genesis_util.StateOperator;
 import genesis_util.StateOperatorListener;
 import genesis_util.Vector3D;
@@ -109,6 +110,15 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 	
 	
 	// OTHER METHODS	-------------------
+	
+	/**
+	 * Changes the operator that defines whether the option is visible or not
+	 * @param operator The new operator
+	 */
+	public void setIsVisibleStateOperator(StateOperator operator)
+	{
+		this.isVisibleOperator = operator;
+	}
 	
 	/**
 	 * Adds a new option to the possible options. The option will be added to the end of the 
@@ -234,6 +244,7 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 		
 		private AbstractButton button;
 		private Vector3D scaling;
+		private StateOperator isDeadOperator;
 		
 		
 		// CONSTRUCTOR	--------------------
@@ -246,9 +257,13 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 		{
 			this.button = button;
 			this.scaling = Vector3D.identityVector();
-		
-			AbstractOption.this.getIsDeadStateOperator().getListenerHandler().add(this);
-			getIsActiveStateOperator().getListenerHandler().add(this);
+			this.isDeadOperator = new DependentStateOperator(
+					AbstractOption.this.getIsDeadStateOperator());
+			
+			this.button.setIsActiveStateOperator(new DependentStateOperator(
+					getIsActiveStateOperator()));
+			this.button.setIsDeadStateOperator(getIsDeadStateOperator());
+			
 			getIsVisibleStateOperator().getListenerHandler().add(this);
 		}
 
@@ -258,7 +273,7 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 		@Override
 		public StateOperator getIsDeadStateOperator()
 		{
-			return AbstractOption.this.getIsDeadStateOperator();
+			return this.isDeadOperator;
 		}
 
 		@Override
@@ -314,9 +329,29 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements Tran
 		/**
 		 * Scales the button's size
 		 * @param scaling The scaling of the button
+		 * @param keepProportions Should the relationship between the button's width and 
+		 * height stay the same
 		 */
-		public void scale(Vector3D scaling)
+		public void scale(Vector3D scaling, boolean keepProportions)
 		{
+			if (keepProportions)
+			{
+				if (scaling.getFirst() < 1 || scaling.getSecond() < 1)
+				{
+					if (scaling.getFirst() < scaling.getSecond())
+						scaling = new Vector3D(scaling.getFirst(), scaling.getFirst());
+					else
+						scaling = new Vector3D(scaling.getSecond(), scaling.getSecond());
+				}
+				else
+				{
+					if (scaling.getFirst() > scaling.getSecond())
+						scaling = new Vector3D(scaling.getFirst(), scaling.getFirst());
+					else
+						scaling = new Vector3D(scaling.getSecond(), scaling.getSecond());
+				}
+			}
+			
 			this.scaling = this.scaling.times(scaling);
 		}
 		

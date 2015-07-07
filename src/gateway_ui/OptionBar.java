@@ -7,8 +7,8 @@ import java.awt.geom.AffineTransform;
 
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
+import genesis_util.DependentStateOperator;
 import genesis_util.StateOperator;
-import genesis_util.StateOperatorListener;
 import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
 import omega_util.Transformable;
@@ -19,8 +19,7 @@ import omega_util.Transformation;
  * @author Mikko Hilpinen
  * @since 29.6.2015
  */
-public class OptionBar extends SimpleGameObject implements Drawable,
-		Transformable, StateOperatorListener
+public class OptionBar extends SimpleGameObject implements Drawable, Transformable
 {
 	// ATTRIBUTES	----------------------
 	
@@ -62,10 +61,6 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 		this.depth = drawingDepth;
 		this.isVisibleOperator = new StateOperator(true, true);
 		this.options = null;
-		
-		getIsDeadStateOperator().getListenerHandler().add(this);
-		getIsActiveStateOperator().getListenerHandler().add(this);
-		getIsVisibleStateOperator().getListenerHandler().add(this);
 	}
 	
 	
@@ -109,21 +104,6 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 	{
 		return this.isVisibleOperator;
 	}
-
-	@Override
-	public void onStateChange(StateOperator source, boolean newState)
-	{
-		// State changes also affect the options
-		if (this.options != null)
-		{
-			if (source.equals(getIsDeadStateOperator()))
-				this.options.getIsDeadStateOperator().setState(newState);
-			else if (source.equals(getIsActiveStateOperator()))
-				this.options.getIsActiveStateOperator().setState(newState);
-			else if (source.equals(getIsVisibleStateOperator()))
-				this.options.getIsVisibleStateOperator().setState(newState);
-		}
-	}
 	
 	
 	// GETTERS & SETTERS 	------------------
@@ -153,6 +133,13 @@ public class OptionBar extends SimpleGameObject implements Drawable,
 		
 		this.options.setDimensions(new Vector3D(width, this.dimensions.getSecond() - 
 				2 * this.margins.getSecond()));
+		
+		this.options.setIsActiveStateOperator(new DependentStateOperator(
+				getIsActiveStateOperator()));
+		this.options.setIsDeadStateOperator(new DependentStateOperator(
+				getIsDeadStateOperator()));
+		this.options.setIsVisibleStateOperator(new DependentStateOperator(
+				getIsVisibleStateOperator()));
 		
 		updateOptionTransformations();
 	}

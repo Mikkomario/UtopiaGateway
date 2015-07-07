@@ -7,7 +7,6 @@ import java.awt.geom.AffineTransform;
 
 import genesis_event.Drawable;
 import genesis_util.StateOperator;
-import genesis_util.StateOperatorListener;
 import genesis_util.Vector3D;
 import omega_util.DependentGameObject;
 import omega_util.Transformable;
@@ -20,8 +19,10 @@ import omega_util.Transformation;
  * @since 28.6.2015
  */
 public abstract class AbstractMessageBoxInputBar extends DependentGameObject<MessageBox> 
-		implements Drawable, Transformable, StateOperatorListener
+		implements Drawable, Transformable
 {
+	// TODO: Use an uiComponentBackground here instead
+	
 	// ATTRIBUTES	--------------------------
 	
 	private Transformation transformation;
@@ -54,8 +55,8 @@ public abstract class AbstractMessageBoxInputBar extends DependentGameObject<Mes
 		this.textColor = textColor;
 		this.height = height;
 		
-		getIsDeadStateOperator().getListenerHandler().add(this);
-		getIsActiveStateOperator().getListenerHandler().add(this);
+		this.input.setIsActiveStateOperator(getIsActiveStateOperator());
+		this.input.setIsDeadStateOperator(getIsDeadStateOperator());
 	}
 	
 	
@@ -99,15 +100,6 @@ public abstract class AbstractMessageBoxInputBar extends DependentGameObject<Mes
 	public StateOperator getIsVisibleStateOperator()
 	{
 		return getMaster().getIsVisibleStateOperator();
-	}
-	
-	@Override
-	public void onStateChange(StateOperator source, boolean newState)
-	{
-		if (source.equals(getIsDeadStateOperator()))
-			this.input.getIsDeadStateOperator().setState(newState);
-		else if (source.equals(getIsActiveStateOperator()))
-			this.input.getIsActiveStateOperator().setState(newState);
 	}
 	
 	@Override

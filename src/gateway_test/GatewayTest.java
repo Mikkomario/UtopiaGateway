@@ -13,7 +13,7 @@ import gateway_event.ButtonEventListener;
 import gateway_ui.AbstractButton;
 import gateway_ui.AbstractOption;
 import gateway_ui.MessageBox;
-import gateway_ui.MessageBoxSpriteBackground;
+import gateway_ui.SpriteUIComponentBackground;
 import gateway_ui.OptionBar;
 import gateway_ui.OptionBarSpriteBackground;
 import gateway_ui.SimpleMessageBoxInputBar;
@@ -89,7 +89,7 @@ public class GatewayTest
 		MessageBox box = new MessageBox(new Vector3D(50, 200), new Vector3D(300, 200), 
 				new Vector3D(20, 10), "This is an awesome message box!#Yay :)", "#", 
 				testFont, testFont, Color.BLACK, handlers);
-		new MessageBoxSpriteBackground(box, SpriteBank.getSprite("test", "background"));
+		new SpriteUIComponentBackground(box, SpriteBank.getSprite("test", "background"));
 		box.addButton(SpriteBank.getSprite("test", "button"), new Vector3D(10, 10), 
 				"Button 1", true);
 		box.addButton(SpriteBank.getSprite("test", "button"), new Vector3D(10, 10), 
@@ -106,7 +106,7 @@ public class GatewayTest
 		options.add("ultra");
 		AbstractOption<String> option = SimplePlusMinusOption.createOption(options, 1, 
 				DepthConstants.HUD - 1, handlers, SpriteBank.getSprite("test", "button"), 
-				SpriteBank.getSprite("test", "button"), 300, new Vector3D(10, 5), testFont, 
+				SpriteBank.getSprite("test", "button"), 200, new Vector3D(10, 5), testFont, 
 				Color.BLACK);
 		OptionBar bar = new OptionBar(new Vector3D(32, 500), "Texture Guality", new Vector3D(500, 64), 
 				new Vector3D(10, 10), DepthConstants.HUD, testFont, Color.BLACK, 

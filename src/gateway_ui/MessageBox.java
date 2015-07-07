@@ -10,6 +10,7 @@ import gateway_event.ButtonEvent.ButtonEventType;
 import gateway_event.ButtonEventListener;
 import genesis_event.EventSelector;
 import genesis_event.HandlerRelay;
+import genesis_util.DependentStateOperator;
 import genesis_util.DepthConstants;
 import genesis_util.StateOperator;
 import genesis_util.StateOperatorListener;
@@ -78,9 +79,12 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 				font, textColor, dimensions.getFirstInt() - 2 * margin.getFirstInt(), 
 				getDepth() - 2, handlers);
 		
+		this.textDrawer.setIsDeadStateOperator(new DependentStateOperator(
+				getIsDeadStateOperator()));
+		this.textDrawer.setIsActiveStateOperator(new DependentStateOperator(
+				getIsActiveStateOperator()));
+		
 		// Listens to its own state to inform the components as well
-		getIsDeadStateOperator().getListenerHandler().add(this);
-		getIsActiveStateOperator().getListenerHandler().add(this);
 		getIsVisibleStateOperator().getListenerHandler().add(this);
 	}
 	
@@ -108,28 +112,12 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 	public void onStateChange(StateOperator source, boolean newState)
 	{
 		// The boxes state also affects the text and the buttons
-		if (source.equals(getIsDeadStateOperator()))
-		{
-			this.textDrawer.getIsDeadStateOperator().setState(newState);
-			for (OptionButton button : this.buttons)
-			{
-				button.setDeadState(newState);
-			}
-		}
-		else if (source.equals(getIsVisibleStateOperator()))
+		if (source.equals(getIsVisibleStateOperator()))
 		{
 			this.textDrawer.getIsVisibleStateOperator().setState(newState);
 			for (OptionButton button : this.buttons)
 			{
 				button.setVisibleState(newState);
-			}
-		}
-		else if (source.equals(getIsActiveStateOperator()))
-		{
-			this.textDrawer.getIsActiveStateOperator().setState(newState);
-			for (OptionButton button : this.buttons)
-			{
-				button.setActiveState(newState);
 			}
 		}
 	}
@@ -226,6 +214,10 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 		
 		if (killOnRelease)
 			button.getListenerHandler().add(this);
+		
+		// The new button's state becomes dependent from the box
+		button.setIsActiveStateOperator(new DependentStateOperator(getIsActiveStateOperator()));
+		button.setIsDeadStateOperator(new DependentStateOperator(getIsDeadStateOperator()));
 		
 		// Also updates the input bar
 		updateInputBarTransformations();
@@ -334,6 +326,14 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 					MessageBox.this.buttonFont, MessageBox.this.textColor, getTextAreaWidth(), 
 					getDepth() - 2, MessageBox.this.handlers);
 			
+			StateOperator dependentActive = new DependentStateOperator(
+					getIsActiveStateOperator());
+			StateOperator dependentDead = new DependentStateOperator(getIsDeadStateOperator());
+			this.button.setIsActiveStateOperator(dependentActive);
+			this.button.setIsDeadStateOperator(dependentDead);
+			this.text.setIsActiveStateOperator(dependentActive);
+			this.text.setIsDeadStateOperator(dependentDead);
+			
 			reset(relativePosition, maxWidth);
 		}
 		
@@ -372,22 +372,10 @@ public class MessageBox extends SimpleGameObject implements Transformable,
 			return this.button.getDimensions().getFirst() * this.scaling.getFirst();
 		}
 		
-		public void setDeadState(boolean newState)
-		{
-			this.button.getIsDeadStateOperator().setState(newState);
-			this.text.getIsDeadStateOperator().setState(newState);
-		}
-		
 		public void setVisibleState(boolean newState)
 		{
 			this.button.getIsVisibleStateOperator().setState(newState);
 			this.text.getIsVisibleStateOperator().setState(newState);
-		}
-		
-		public void setActiveState(boolean newState)
-		{
-			this.button.getIsActiveStateOperator().setState(newState);
-			this.text.getIsActiveStateOperator().setState(newState);
 		}
 		
 		private Vector3D getAbsoluteButtonPosition()
