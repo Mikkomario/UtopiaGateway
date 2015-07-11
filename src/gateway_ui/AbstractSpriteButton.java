@@ -3,7 +3,6 @@ package gateway_ui;
 import vision_drawing.DependentSpriteDrawer;
 import vision_sprite.SpriteDrawer;
 import genesis_event.HandlerRelay;
-import genesis_util.HelpMath;
 import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 
@@ -42,16 +41,7 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	
 	// IMPLEMENTED METHODS	----------------
 
-	@Override
-	public boolean isInAreaOfInterest(Vector3D position)
-	{
-		if (getDrawer() == null)
-			return false;
-		
-		return HelpMath.pointIsInRange(getTransformation().inverseTransform(position).plus(
-				getSpriteDrawer().getSprite().getOrigin()), Vector3D.zeroVector(), 
-				getSpriteDrawer().getSprite().getDimensions());
-	}
+	
 
 	@Override
 	public StateOperator getIsVisibleStateOperator()
@@ -62,12 +52,18 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	@Override
 	public Vector3D getDimensions()
 	{
+		if (this.drawer == null)
+			return Vector3D.identityVector();
+		
 		return getSpriteDrawer().getSprite().getDimensions();
 	}
 	
 	@Override
 	public Vector3D getOrigin()
 	{
+		if (this.drawer == null)
+			return Vector3D.identityVector();
+		
 		return getSpriteDrawer().getOrigin();
 	}
 	

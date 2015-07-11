@@ -99,6 +99,7 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		this.textDrawer.setTrasformation(t);
 		
 		updateInputBarTransformations();
+		updateButtonTransformations();
 	}
 	
 	@Override
@@ -199,8 +200,8 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		button.setIsDeadStateOperator(new DependentStateOperator(getIsDeadStateOperator()));
 		button.setIsVisibleStateOperator(new DependentStateOperator(getIsVisibleStateOperator()));
 		
-		// Also updates the input bar
-		updateInputBarTransformations();
+		// Also updates the button transformations
+		updateButtonTransformations();
 	}
 	
 	/**
@@ -222,6 +223,27 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		return button;
 	}
 	
+	/**
+	 * Adds a new rectangle button to the box
+	 * @param lineColors The colors used when drawing the edges (0 - 3 instances)
+	 * @param fillColors The colors used when drawing the inner rectangle (0 - 3 instances)
+	 * @param buttonSize The size of the button
+	 * @param buttonMargins The margins placed left and above the text
+	 * @param message The text shown in the button
+	 * @param killOnRelease Should the messageBox die once the button is pressed & released
+	 * @return The button that was created and added to the box
+	 */
+	public RectangleButton addButton(Color[] lineColors, Color[] fillColors, 
+			Vector3D buttonSize, Vector3D buttonMargins, String message, boolean killOnRelease)
+	{
+		RectangleButton button = new RectangleButton(Vector3D.zeroVector(), getHandlers(), 
+				getDepth() - 1, buttonSize, Vector3D.zeroVector(), lineColors, fillColors);
+		
+		addButton(button, buttonMargins, message, killOnRelease);
+		
+		return button;
+	}
+			
 	/**
 	 * Adds a new input bar to the message box, removing the previous one
 	 * @param inputBar The new input bar that will be placed in the box
@@ -276,6 +298,14 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		
 		// Applies transformations
 		this.inputBar.setTrasformation(getTransformation().withPosition(absoluteBarPosition));
+	}
+	
+	private void updateButtonTransformations()
+	{
+		for (OptionButton button : this.buttons)
+		{
+			button.updateTransformation();
+		}
 	}
 	
 	private int getButtonHeight()

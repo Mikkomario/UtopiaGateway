@@ -5,10 +5,14 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
+import omega_util.Transformable;
+import omega_util.Transformation;
 import gateway_ui.AbstractOption;
 import gateway_ui.InputBar;
 import gateway_ui.MessageBox;
 import gateway_ui.RectangleUIComponentBackground;
+import gateway_ui.SimpleSliderOption;
+import gateway_ui.SingleSpriteButton;
 import gateway_ui.SpriteUIComponentBackground;
 import gateway_ui.OptionBar;
 import gateway_ui.SimplePlusMinusOption;
@@ -83,7 +87,12 @@ public class GatewayTest
 		
 		box.addButton(SpriteBank.getSprite("test", "button"), new Vector3D(10, 10), 
 				"Button 1", true);
-		box.addButton(SpriteBank.getSprite("test", "button"), new Vector3D(10, 10), 
+		//box.addButton(SpriteBank.getSprite("test", "button"), new Vector3D(10, 10), 
+		//		"Button 2", true);
+		
+		Color[] lineColors = {Color.WHITE};
+		Color[] fillColors = {Color.CYAN, Color.DARK_GRAY, Color.BLACK};
+		box.addButton(lineColors, fillColors, new Vector3D(64, 64), new Vector3D(10, 10), 
 				"Button 2", true);
 		
 		InputBar inputBar = new InputBar(handlers, new Vector3D(10, 3), new Vector3D(100, 15), 
@@ -104,12 +113,28 @@ public class GatewayTest
 				Color.BLACK);
 		new RectangleUIComponentBackground(option, handlers, Color.BLACK, null);
 		
-		OptionBar bar = new OptionBar(new Vector3D(32, 500), "Texture Guality", new Vector3D(500, 64), 
+		OptionBar bar = new OptionBar(new Vector3D(32, 432), "Texture Guality", new Vector3D(500, 64), 
 				new Vector3D(10, 10), DepthConstants.HUD, testFont, Color.BLACK, 
 				handlers);
 		bar.setOptions(option);
+		
+		OptionBar sliderBar = new OptionBar(new Vector3D(32, 532), "Texture Guality 2", 
+				new Vector3D(500, 64), new Vector3D(10, 10), DepthConstants.HUD, testFont, 
+				Color.BLACK, handlers);
+		AbstractOption<String> sliderOption = new SimpleSliderOption<>(options, 1, 
+				sliderBar.getDepth() - 2, handlers, new Vector3D(200, 50), 
+				new SingleSpriteButton(Vector3D.zeroVector(), sliderBar.getDepth() - 4, 
+				SpriteBank.getSprite("test", "button").withDimensions(new Vector3D(32, 32)), 
+				handlers), new Vector3D(10, 5), testFont, Color.BLACK);
+		//Transformable.transform(sliderOption, Transformation.transitionTransformation(new Vector3D(400, 200)));
+		new RectangleUIComponentBackground(sliderOption, handlers, Color.BLACK, null);
+		sliderBar.setOptions(sliderOption);
+		
 		//new OptionBarSpriteBackground(bar, handlers, SpriteBank.getSprite("test", "background"));
 		new RectangleUIComponentBackground(bar, handlers, Color.BLACK, null);
+		new RectangleUIComponentBackground(sliderBar, handlers, Color.BLACK, null);
+		
+		Transformable.transform(box, Transformation.rotationTransformation(45));
 	}
 	
 	

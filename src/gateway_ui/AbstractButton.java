@@ -12,6 +12,7 @@ import genesis_event.MouseEvent.MouseButton;
 import genesis_event.MouseEvent.MouseButtonEventType;
 import genesis_event.MouseEvent.MouseEventType;
 import genesis_event.MouseEvent.MouseMovementEventType;
+import genesis_util.HelpMath;
 import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
@@ -83,6 +84,13 @@ public abstract class AbstractButton extends SimpleGameObject implements UICompo
 	
 	// IMPLEMENTED METHODS	------------------
 
+	@Override
+	public boolean isInAreaOfInterest(Vector3D position)
+	{
+		return HelpMath.pointIsInRange(getTransformation().inverseTransform(position).plus(
+				getOrigin()), Vector3D.zeroVector(), getDimensions());
+	}
+	
 	@Override
 	public StateOperator getListensToMouseEventsOperator()
 	{
