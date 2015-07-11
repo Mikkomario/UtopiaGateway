@@ -154,7 +154,7 @@ public abstract class AbstractSliderOption<T> extends AbstractOption<T> implemen
 					event.getPosition().minus(this.buttonDragPosition));
 			
 			// TODO: Try using rounding instead of casting to int
-			setCurrentIndex((int) (newRelativeSliderPos.getFirst() * 
+			setCurrentIndex((int) Math.round(newRelativeSliderPos.getFirst() * 
 					(getOptionAmount() - 1) / this.sliderWidth));
 			
 			resetButtonPosition();
@@ -180,15 +180,15 @@ public abstract class AbstractSliderOption<T> extends AbstractOption<T> implemen
 	/**
 	 * @return The relative position of the leftmost end of the slider
 	 */
-	protected Vector3D getRelativeSliderStart()
+	public Vector3D getRelativeSliderStart()
 	{
 		return this.sliderStart;
 	}
 	
 	/**
-	 * @return The width of the slider area in pixels
+	 * @return The width of the slider area in pixels (transformations are not applied here)
 	 */
-	protected double getSliderWidth()
+	public double getSliderWidth()
 	{
 		return this.sliderWidth;
 	}

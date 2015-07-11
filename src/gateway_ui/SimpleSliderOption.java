@@ -64,12 +64,7 @@ public class SimpleSliderOption<T> extends AbstractSliderOption<T>
 		g2d.setFont(this.font);
 		g2d.drawString(getCurrentChoise().toString(), this.margins.getFirstInt(), 
 				getDimensions().getSecondInt() - this.margins.getSecondInt());
-		/*
-		g2d.drawLine(getRelativeSliderStart().getFirstInt(), 
-				getRelativeSliderStart().getSecondInt(), 
-				getRelativeSliderStart().getFirstInt() + (int) getSliderWidth(), 
-				getRelativeSliderStart().getSecondInt());
-		*/
+		
 		g2d.setTransform(lastTransform);
 	}
 	

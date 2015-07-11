@@ -8,11 +8,13 @@ import java.util.List;
 import omega_util.Transformable;
 import omega_util.Transformation;
 import gateway_ui.AbstractOption;
+import gateway_ui.AbstractSliderOption;
 import gateway_ui.InputBar;
 import gateway_ui.MessageBox;
 import gateway_ui.RectangleUIComponentBackground;
 import gateway_ui.SimpleSliderOption;
 import gateway_ui.SingleSpriteButton;
+import gateway_ui.SliderLineDrawer;
 import gateway_ui.SpriteUIComponentBackground;
 import gateway_ui.OptionBar;
 import gateway_ui.SimplePlusMinusOption;
@@ -121,7 +123,7 @@ public class GatewayTest
 		OptionBar sliderBar = new OptionBar(new Vector3D(32, 532), "Texture Guality 2", 
 				new Vector3D(500, 64), new Vector3D(10, 10), DepthConstants.HUD, testFont, 
 				Color.BLACK, handlers);
-		AbstractOption<String> sliderOption = new SimpleSliderOption<>(options, 1, 
+		AbstractSliderOption<String> sliderOption = new SimpleSliderOption<>(options, 1, 
 				sliderBar.getDepth() - 2, handlers, new Vector3D(200, 50), 
 				new SingleSpriteButton(Vector3D.zeroVector(), sliderBar.getDepth() - 4, 
 				SpriteBank.getSprite("test", "button").withDimensions(new Vector3D(32, 32)), 
@@ -133,6 +135,8 @@ public class GatewayTest
 		//new OptionBarSpriteBackground(bar, handlers, SpriteBank.getSprite("test", "background"));
 		new RectangleUIComponentBackground(bar, handlers, Color.BLACK, null);
 		new RectangleUIComponentBackground(sliderBar, handlers, Color.BLACK, null);
+		
+		new SliderLineDrawer(sliderOption, handlers, Color.BLACK);
 		
 		Transformable.transform(box, Transformation.rotationTransformation(45));
 	}
