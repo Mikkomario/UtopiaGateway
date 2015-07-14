@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import omega_util.SimpleGameObject;
+import omega_util.Transformable;
 import omega_util.Transformation;
 
 /**
@@ -41,6 +42,7 @@ public class TextDrawer extends SimpleGameObject implements Drawable, UIComponen
 	private Vector3D dimensions, margins;
 	
 	private Transformation transformation;
+	private Transformable anchor;
 	private StateOperator isVisibleOperator;
 	
 	
@@ -77,6 +79,7 @@ public class TextDrawer extends SimpleGameObject implements Drawable, UIComponen
 		this.transformation = new Transformation(position);
 		this.isVisibleOperator = new StateOperator(true, true);
 		this.paragraphSeparator = paragraphSeparator;
+		this.anchor = null;
 		
 		setText(text);
 	}
@@ -87,6 +90,9 @@ public class TextDrawer extends SimpleGameObject implements Drawable, UIComponen
 	@Override
 	public Transformation getTransformation()
 	{
+		if (this.anchor != null)
+			return this.anchor.getTransformation();
+		
 		return this.transformation;
 	}
 
@@ -183,6 +189,20 @@ public class TextDrawer extends SimpleGameObject implements Drawable, UIComponen
 	public void setIsVisibleStateOperator(StateOperator operator)
 	{
 		this.isVisibleOperator = operator;
+	}
+	
+	
+	// OTHER METHODS	--------------------------
+	
+	/**
+	 * Calling this method anchors this drawer to another object. This means that the text 
+	 * drawer will use that object's transformations.
+	 * @param t The object this drawer will be anchored to (null if the drawer should have 
+	 * it's own transformations (default))
+	 */
+	public void anchorToObject(Transformable t)
+	{
+		this.anchor = t;
 	}
 	
 	
