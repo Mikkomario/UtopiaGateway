@@ -32,6 +32,9 @@ import omega_util.Transformation;
  */
 public class TextDrawer extends SimpleGameObject implements Drawable, UIComponent
 {
+	// TODO: Consider making three separate classes like with the spriteDrawers
+	// drawing, dependent, independent
+	
 	// ATTRIBUTES	------------------------------------------------------
 	
 	private List<ParagraphDrawer> paragraphs;
