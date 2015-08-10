@@ -4,13 +4,12 @@ import gateway_event.ButtonEvent;
 import gateway_event.ButtonEvent.ButtonEventType;
 import gateway_event.ButtonEventListener;
 import genesis_event.EventSelector;
+import genesis_event.GenesisHandlerType;
 import genesis_event.HandlerRelay;
-import genesis_util.StateOperator;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
 
 import java.util.Collection;
-
-import omega_util.Transformation;
 
 /**
  * This option type presents two buttons that allow the user to scroll backwards and forwards 
@@ -100,25 +99,23 @@ public abstract class AbstractPlusMinusOption<T> extends AbstractOption<T> imple
 		if (e.getSource().equals(this.previousButton.getButton()))
 		{
 			if (isAtMax())
-				this.nextButton.getButton().getIsVisibleStateOperator().setState(true);
+				this.nextButton.getButton().getHandlingOperators().getShouldBeHandledOperator(
+						GenesisHandlerType.DRAWABLEHANDLER).setState(true);
 			previous();
 			if (isAtMin())
-				e.getSource().getIsVisibleStateOperator().setState(false);
+				e.getSource().getHandlingOperators().getShouldBeHandledOperator(
+						GenesisHandlerType.DRAWABLEHANDLER).setState(false);
 		}
 		else
 		{
 			if (isAtMin())
-				this.previousButton.getButton().getIsVisibleStateOperator().setState(true);
+				this.previousButton.getButton().getHandlingOperators().getShouldBeHandledOperator(
+						GenesisHandlerType.DRAWABLEHANDLER).setState(true);
 			next();
 			if (isAtMax())
-				e.getSource().getIsVisibleStateOperator().setState(false);
+				e.getSource().getHandlingOperators().getShouldBeHandledOperator(
+						GenesisHandlerType.DRAWABLEHANDLER).setState(false);
 		}
-	}
-
-	@Override
-	public StateOperator getListensToButtonEventsOperator()
-	{
-		return getIsActiveStateOperator();
 	}
 
 	@Override

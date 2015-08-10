@@ -5,7 +5,6 @@ import genesis_event.Handler;
 import genesis_event.HandlerRelay;
 import genesis_event.HandlerType;
 import genesis_event.StrictEventSelector;
-import genesis_util.StateOperator;
 
 /**
  * ButtonEventHandlers inform multiple buttonListeners about buttonEvents.
@@ -19,7 +18,6 @@ public class ButtonEventHandler extends Handler<ButtonEventListener> implements
 	
 	private ButtonEvent lastEvent;
 	private EventSelector<ButtonEvent> selector;
-	private StateOperator listensOperator;
 	
 	
 	// CONSTRUCTOR	-------------------------
@@ -71,14 +69,8 @@ public class ButtonEventHandler extends Handler<ButtonEventListener> implements
 	{
 		// Informs the listeners
 		this.lastEvent = e;
-		handleObjects();
+		handleObjects(true);
 		this.lastEvent = null;
-	}
-
-	@Override
-	public StateOperator getListensToButtonEventsOperator()
-	{
-		return this.listensOperator;
 	}
 
 	@Override
@@ -97,8 +89,7 @@ public class ButtonEventHandler extends Handler<ButtonEventListener> implements
 	protected boolean handleObject(ButtonEventListener h)
 	{
 		// Only informs active listeners that select the current event
-		if (h.getListensToButtonEventsOperator().getState() && 
-				h.getButtonEventSelector().selects(this.lastEvent))
+		if (h.getButtonEventSelector().selects(this.lastEvent))
 			h.onButtonEvent(this.lastEvent);
 		
 		return true;
@@ -111,28 +102,5 @@ public class ButtonEventHandler extends Handler<ButtonEventListener> implements
 	{
 		this.lastEvent = null;
 		this.selector = new StrictEventSelector<>();
-		this.listensOperator = new AnyHandledListensToEventsOperator();
-	}
-	
-	
-	// SUBCLASSES	-------------------------
-	
-	private class AnyHandledListensToEventsOperator extends ForAnyHandledsOperator
-	{
-		// CONSTRUCTOR	------------------
-		
-		public AnyHandledListensToEventsOperator()
-		{
-			super(true);
-		}
-		
-		
-		// IMPLEMENTED METHODS	----------
-	
-		@Override
-		protected StateOperator getHandledStateOperator(ButtonEventListener h)
-		{
-			return h.getListensToButtonEventsOperator();
-		}
 	}
 }

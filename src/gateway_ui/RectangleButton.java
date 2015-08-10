@@ -6,7 +6,6 @@ import java.awt.geom.AffineTransform;
 
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
-import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 
 /**
@@ -22,7 +21,6 @@ public class RectangleButton extends AbstractButton implements Drawable
 	private Color[] lineColors, fillColors;
 	private int lineColorIndex, fillColorIndex;
 	private Vector3D dimensions, origin;
-	private StateOperator isVisibleOperator;
 	
 	
 	// CONSTRUCTOR	------------------------
@@ -55,8 +53,6 @@ public class RectangleButton extends AbstractButton implements Drawable
 		
 		this.lineColors = lineColors;
 		this.fillColors = fillColors;
-		
-		this.isVisibleOperator = new StateOperator(true, true);
 	}
 	
 	
@@ -72,12 +68,6 @@ public class RectangleButton extends AbstractButton implements Drawable
 	public Vector3D getOrigin()
 	{
 		return this.origin;
-	}
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
 	}
 
 	@Override
@@ -102,12 +92,6 @@ public class RectangleButton extends AbstractButton implements Drawable
 				this.fillColorIndex = this.fillColors.length - 1;
 				break;
 		}
-	}
-
-	@Override
-	public void setIsVisibleStateOperator(StateOperator operator)
-	{
-		this.isVisibleOperator = operator;
 	}
 
 	@Override

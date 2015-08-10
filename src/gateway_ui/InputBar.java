@@ -6,18 +6,21 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
 import genesis_event.Drawable;
+import genesis_event.GenesisHandlerType;
+import genesis_event.Handled;
 import genesis_event.HandlerRelay;
+import genesis_util.DependentStateOperator;
+import genesis_util.SimpleHandled;
 import genesis_util.StateOperator;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
-import omega_util.SimpleGameObject;
-import omega_util.Transformation;
 
 /**
  * InputBars listen for user input on the keyboard and draw it visually
  * @author Mikko Hilpinen
  * @since 7.7.2015
  */
-public class InputBar extends SimpleGameObject implements UIComponent, Drawable
+public class InputBar extends SimpleHandled implements UIComponent, Drawable
 {
 	// ATTRIBUTES	-------------------------
 	
@@ -27,7 +30,6 @@ public class InputBar extends SimpleGameObject implements UIComponent, Drawable
 	private Font font;
 	private Color textColor;
 	private int drawingDepth;
-	private StateOperator isVisibleOperator;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -53,10 +55,14 @@ public class InputBar extends SimpleGameObject implements UIComponent, Drawable
 		this.font = font;
 		this.textColor = textColor;
 		this.drawingDepth = drawingDepth;
-		this.isVisibleOperator = new StateOperator(true, true);
 		
-		this.input.setIsActiveStateOperator(getIsActiveStateOperator());
-		this.input.setIsDeadStateOperator(getIsDeadStateOperator());
+		// The input bar has separate visibility and keyListening states
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.DRAWABLEHANDLER, 
+				new StateOperator(true, true));
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.KEYHANDLER, 
+				new StateOperator(true, true));
+		
+		this.input.makeDependentFrom(this);
 	}
 	
 	
@@ -91,12 +97,6 @@ public class InputBar extends SimpleGameObject implements UIComponent, Drawable
 	{
 		return this.drawingDepth;
 	}
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
-	}
 	
 	@Override
 	public void drawSelf(Graphics2D g2d)
@@ -116,6 +116,17 @@ public class InputBar extends SimpleGameObject implements UIComponent, Drawable
 	// OTHER METHODS	-----------------------
 	
 	/**
+	 * Makes the input bar dependent from the other object's states
+	 * @param other The object this bar will become dependent from
+	 */
+	public void makeDependentFrom(Handled other)
+	{
+		setIsDeadOperator(new DependentStateOperator(other.getIsDeadStateOperator()));
+		getHandlingOperators().makeDependent(other, GenesisHandlerType.DRAWABLEHANDLER);
+		getHandlingOperators().makeDependent(other, GenesisHandlerType.KEYHANDLER);
+	}
+	
+	/**
 	 * Changes the size of the bar (before any transformations are applied)
 	 * @param newDimensions The bar's new dimensions
 	 */
@@ -131,15 +142,6 @@ public class InputBar extends SimpleGameObject implements UIComponent, Drawable
 	public void setDepth(int drawingDepth)
 	{
 		this.drawingDepth = drawingDepth;
-	}
-	
-	/**
-	 * Changes the operator that defines whether the bar is visible or not
-	 * @param operator The new stateOperator used
-	 */
-	public void setIsVisibleStateOperator(StateOperator operator)
-	{
-		this.isVisibleOperator = operator;
 	}
 	
 	/**

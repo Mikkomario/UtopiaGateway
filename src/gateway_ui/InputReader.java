@@ -1,13 +1,15 @@
 package gateway_ui;
 
 import genesis_event.EventSelector;
+import genesis_event.GenesisHandlerType;
+import genesis_event.Handled;
 import genesis_event.HandlerRelay;
 import genesis_event.KeyEvent;
 import genesis_event.KeyEvent.ContentType;
 import genesis_event.KeyListener;
 import genesis_event.KeyEvent.KeyEventType;
-import genesis_util.StateOperator;
-import omega_util.SimpleGameObject;
+import genesis_util.DependentStateOperator;
+import genesis_util.SimpleHandled;
 
 /**
  * Inputreader listens to the keyboard and tries to form string depending 
@@ -16,7 +18,7 @@ import omega_util.SimpleGameObject;
  * @author Mikko Hilpinen.
  * @since 25.8.2013.
  */
-public class InputReader extends SimpleGameObject implements KeyListener
+public class InputReader extends SimpleHandled implements KeyListener
 {
 	// ATTRIBUTES	-------------------------------------------------------
 	
@@ -80,12 +82,6 @@ public class InputReader extends SimpleGameObject implements KeyListener
 	}
 
 	@Override
-	public StateOperator getListensToKeyEventsOperator()
-	{
-		return getIsActiveStateOperator();
-	}
-
-	@Override
 	public void onKeyEvent(KeyEvent event)
 	{
 		if (event.getKey() == KeyEvent.BACKSPACE)
@@ -104,5 +100,19 @@ public class InputReader extends SimpleGameObject implements KeyListener
 			this.input.append(event.getKeyChar());
 			this.inputUpdated = true;
 		}
+	}
+	
+	
+	// OTHER METHODS	----------------------
+	
+	/**
+	 * Ties the reader to another object. The reader will die once the other object dies and 
+	 * will listen to key events only when the other object does
+	 * @param other The object this reader will be tied to
+	 */
+	public void makeDependentFrom(Handled other)
+	{
+		getHandlingOperators().makeDependent(other, GenesisHandlerType.KEYHANDLER);
+		setIsDeadOperator(new DependentStateOperator(other.getIsDeadStateOperator()));
 	}
 }

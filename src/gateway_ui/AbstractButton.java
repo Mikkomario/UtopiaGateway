@@ -3,6 +3,8 @@ package gateway_ui;
 import gateway_event.ButtonEvent;
 import gateway_event.ButtonEventHandler;
 import genesis_event.EventSelector;
+import genesis_event.GenesisHandlerType;
+import genesis_event.Handled;
 import genesis_event.HandlerRelay;
 import genesis_event.MouseEvent;
 import genesis_event.MouseListener;
@@ -12,18 +14,19 @@ import genesis_event.MouseEvent.MouseButton;
 import genesis_event.MouseEvent.MouseButtonEventType;
 import genesis_event.MouseEvent.MouseEventType;
 import genesis_event.MouseEvent.MouseMovementEventType;
+import genesis_util.DependentStateOperator;
 import genesis_util.HelpMath;
+import genesis_util.SimpleHandled;
 import genesis_util.StateOperator;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
-import omega_util.SimpleGameObject;
-import omega_util.Transformation;
 
 /**
  * Buttons are used as visual interface elements that can be used with the mouse
  * @author Mikko Hilpinen
  * @since 6.6.2015
  */
-public abstract class AbstractButton extends SimpleGameObject implements UIComponent,
+public abstract class AbstractButton extends SimpleHandled implements UIComponent,
 		MouseListener
 {
 	// ATTRIBUTES	--------------------------
@@ -64,6 +67,12 @@ public abstract class AbstractButton extends SimpleGameObject implements UICompo
 		this.drawingDepth = drawingDepth;
 		
 		this.selector = selector;
+		
+		// Buttons have separate visibility and mouse listening operators
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.DRAWABLEHANDLER, 
+				new StateOperator(true, true));
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.MOUSEHANDLER, 
+				new StateOperator(true, true));
 	}
 	
 	
@@ -75,12 +84,6 @@ public abstract class AbstractButton extends SimpleGameObject implements UICompo
 	 */
 	protected abstract void changeVisualStyle(ButtonStatus status);
 	
-	/**
-	 * Changes the operator that defines whether or not the button is visible
-	 * @param operator The operator that will define the button's visibility
-	 */
-	public abstract void setIsVisibleStateOperator(StateOperator operator);
-	
 	
 	// IMPLEMENTED METHODS	------------------
 
@@ -89,12 +92,6 @@ public abstract class AbstractButton extends SimpleGameObject implements UICompo
 	{
 		return HelpMath.pointIsInRange(getTransformation().inverseTransform(position).plus(
 				getOrigin()), Vector3D.zeroVector(), getDimensions());
-	}
-	
-	@Override
-	public StateOperator getListensToMouseEventsOperator()
-	{
-		return getIsActiveStateOperator();
 	}
 
 	@Override
@@ -185,6 +182,17 @@ public abstract class AbstractButton extends SimpleGameObject implements UICompo
 	
 	
 	// OTHER METHODS	------------------------
+	
+	/**
+	 * Makes the button dependent from another object
+	 * @param other The object the button will depend from
+	 */
+	public void makeDependentFrom(Handled other)
+	{
+		getHandlingOperators().makeDependent(other, GenesisHandlerType.MOUSEHANDLER);
+		getHandlingOperators().makeDependent(other, GenesisHandlerType.DRAWABLEHANDLER);
+		setIsDeadOperator(new DependentStateOperator(other.getIsDeadStateOperator()));
+	}
 	
 	private void updateStatus()
 	{

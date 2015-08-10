@@ -2,9 +2,7 @@ package gateway_ui;
 
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
-import genesis_util.DependentStateOperator;
-import genesis_util.StateOperator;
-import omega_util.DependentGameObject;
+import genesis_util.ConnectedHandled;
 
 /**
  * These are backgrounds that can be placed behind various ui components. The backgrounds 
@@ -12,14 +10,9 @@ import omega_util.DependentGameObject;
  * @author Mikko Hilpinen
  * @since 4.7.2015
  */
-public abstract class UIComponentBackground extends DependentGameObject<UIComponent> implements
+public abstract class UIComponentBackground extends ConnectedHandled<UIComponent> implements
 		Drawable
 {
-	// ATTRIBUTES	-------------------
-	
-	private StateOperator isVisibleOperator;
-	
-	
 	// CONSTRUCTOR	-------------------
 	
 	/**
@@ -30,8 +23,6 @@ public abstract class UIComponentBackground extends DependentGameObject<UICompon
 	public UIComponentBackground(UIComponent master, HandlerRelay handlers)
 	{
 		super(master, handlers);
-		
-		this.isVisibleOperator = new DependentStateOperator(master.getIsVisibleStateOperator());
 	}
 	
 	
@@ -41,11 +32,5 @@ public abstract class UIComponentBackground extends DependentGameObject<UICompon
 	public int getDepth()
 	{
 		return getMaster().getDepth() + 2;
-	}
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
 	}
 }

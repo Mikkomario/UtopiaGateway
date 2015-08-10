@@ -2,7 +2,6 @@ package gateway_event;
 
 import genesis_event.EventSelector;
 import genesis_event.Handled;
-import genesis_util.StateOperator;
 
 /**
  * ButtonEventListeners are interested in button events
@@ -16,12 +15,6 @@ public interface ButtonEventListener extends Handled
 	 * @param e The event that just occurred
 	 */
 	public void onButtonEvent(ButtonEvent e);
-	
-	/**
-	 * @return The stateOperator that defines whether the listener is interested in new events 
-	 * or not
-	 */
-	public StateOperator getListensToButtonEventsOperator();
 	
 	/**
 	 * @return The eventSelector that defines whether the listener is interested in an event 

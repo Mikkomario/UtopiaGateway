@@ -3,7 +3,6 @@ package gateway_ui;
 import vision_drawing.DependentSpriteDrawer;
 import vision_sprite.SpriteDrawer;
 import genesis_event.HandlerRelay;
-import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 
 /**
@@ -16,7 +15,6 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	// ATTRIBUTES	------------------------
 	
 	private DependentSpriteDrawer<AbstractButton, SpriteDrawerType> drawer;
-	private StateOperator isVisibleOperator;
 	
 	
 	// CONSTRUCTOR	------------------------
@@ -33,21 +31,13 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 	{
 		super(position, handlers, initialDepth);
 		
+		if (drawer != null)
+			drawer.setMaster(this);
 		this.drawer = new DependentSpriteDrawer<>(this, initialDepth, drawer, handlers);
-		this.isVisibleOperator = new StateOperator(true, true);
-		getDrawer().setIsVisibleOperator(getIsVisibleStateOperator());
 	}
 	
 	
 	// IMPLEMENTED METHODS	----------------
-
-	
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
-	}
 	
 	@Override
 	public Vector3D getDimensions()
@@ -65,12 +55,6 @@ public abstract class AbstractSpriteButton<SpriteDrawerType extends SpriteDrawer
 			return Vector3D.identityVector();
 		
 		return getSpriteDrawer().getOrigin();
-	}
-	
-	@Override
-	public void setIsVisibleStateOperator(StateOperator operator)
-	{
-		this.isVisibleOperator = operator;
 	}
 	
 	@Override

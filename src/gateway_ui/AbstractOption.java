@@ -5,13 +5,14 @@ import java.util.Collection;
 import java.util.List;
 
 import genesis_event.Drawable;
+import genesis_event.GenesisHandlerType;
+import genesis_event.Handled;
 import genesis_event.HandlerRelay;
 import genesis_util.DependentStateOperator;
+import genesis_util.SimpleHandled;
 import genesis_util.StateOperator;
-import genesis_util.StateOperatorListener;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
-import omega_util.SimpleGameObject;
-import omega_util.Transformation;
 
 /**
  * This option allows the user to pick a value from a set of values
@@ -19,13 +20,12 @@ import omega_util.Transformation;
  * @param <T> The type of option chosen in this element
  * @since 29.6.2015
  */
-public abstract class AbstractOption<T> extends SimpleGameObject implements UIComponent,
+public abstract class AbstractOption<T> extends SimpleHandled implements UIComponent,
 		Drawable
 {
 	// ATTRIBUTES	------------------------
 	
 	private int depth;
-	private StateOperator isVisibleOperator;
 	private Transformation transformation;
 	private List<T> options;
 	private int currentIndex;
@@ -46,13 +46,18 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements UICo
 		super(handlers);
 		
 		this.depth = drawingDepth;
-		this.isVisibleOperator = new StateOperator(true, true);
 		this.transformation = new Transformation();
 		this.options = new ArrayList<>();
 		this.options.addAll(options);
 		this.currentIndex = defaultIndex;
 		
 		checkIndex();
+		
+		// The option uses a separate visibility and mouse listening states
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.DRAWABLEHANDLER, 
+				new StateOperator(true, true));
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.MOUSEHANDLER, 
+				new StateOperator(true, true));
 	}
 	
 	// ABSTRACT METHODS	-------------------
@@ -70,12 +75,6 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements UICo
 	public int getDepth()
 	{
 		return this.depth;
-	}
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
 	}
 
 	@Override
@@ -112,12 +111,14 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements UICo
 	// OTHER METHODS	-------------------
 	
 	/**
-	 * Changes the operator that defines whether the option is visible or not
-	 * @param operator The new operator
+	 * Makes the option dependent from another object's states (alive, mouse & drawing)
+	 * @param other The object this option will become dependent from
 	 */
-	public void setIsVisibleStateOperator(StateOperator operator)
+	public void makeDependentFrom(Handled other)
 	{
-		this.isVisibleOperator = operator;
+		setIsDeadOperator(new DependentStateOperator(other.getIsDeadStateOperator()));
+		getHandlingOperators().makeDependent(other, GenesisHandlerType.DRAWABLEHANDLER);
+		getHandlingOperators().makeDependent(other, GenesisHandlerType.MOUSEHANDLER);
 	}
 	
 	/**
@@ -234,17 +235,17 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements UICo
 	
 	/**
 	 * OptionButton is a wrapper for an abstract button that allows easier scaling and 
-	 * dependent states
+	 * dependent states. The optionbuttons are also dependent from the option, so their states 
+	 * don't have to be changed separately
 	 * @author Mikko Hilpinen
 	 * @since 30.6.2015
 	 */
-	protected class OptionButton implements StateOperatorListener
+	protected class OptionButton
 	{
 		// ATTRIBUTES	--------------------
 		
 		private AbstractButton button;
 		private Vector3D scaling;
-		private StateOperator isDeadOperator;
 		
 		
 		// CONSTRUCTOR	--------------------
@@ -257,34 +258,8 @@ public abstract class AbstractOption<T> extends SimpleGameObject implements UICo
 		{
 			this.button = button;
 			this.scaling = Vector3D.identityVector();
-			this.isDeadOperator = new DependentStateOperator(
-					AbstractOption.this.getIsDeadStateOperator());
 			
-			this.button.setIsActiveStateOperator(new DependentStateOperator(
-					getIsActiveStateOperator()));
-			this.button.setIsDeadStateOperator(getIsDeadStateOperator());
-			
-			getIsVisibleStateOperator().getListenerHandler().add(this);
-		}
-
-		
-		// IMPLEMENTED METHODS	------------
-
-		@Override
-		public StateOperator getIsDeadStateOperator()
-		{
-			return this.isDeadOperator;
-		}
-
-		@Override
-		public void onStateChange(StateOperator source, boolean newState)
-		{
-			if (source.equals(getIsDeadStateOperator()))
-				this.button.getIsDeadStateOperator().setState(newState);
-			else if (source.equals(getIsActiveStateOperator()))
-				this.button.getIsActiveStateOperator().setState(newState);
-			else if (source.equals(getIsVisibleStateOperator()))
-				this.button.getIsVisibleStateOperator().setState(newState);
+			this.button.makeDependentFrom(AbstractOption.this);
 		}
 		
 		

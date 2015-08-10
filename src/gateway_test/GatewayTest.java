@@ -5,8 +5,6 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-import omega_util.Transformable;
-import omega_util.Transformation;
 import gateway_ui.AbstractOption;
 import gateway_ui.AbstractSliderOption;
 import gateway_ui.InputBar;
@@ -23,6 +21,8 @@ import genesis_event.HandlerRelay;
 import genesis_event.KeyListenerHandler;
 import genesis_event.MouseListenerHandler;
 import genesis_util.DepthConstants;
+import genesis_util.Transformable;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
 import genesis_video.GamePanel;
 import genesis_video.GameWindow;
@@ -99,8 +99,9 @@ public class GatewayTest
 		
 		InputBar inputBar = new InputBar(handlers, new Vector3D(10, 3), new Vector3D(100, 15), 
 				testFont, Color.WHITE, 0);
-		new RectangleUIComponentBackground(inputBar, handlers, Color.WHITE, Color.BLACK);
 		box.addInputBar(inputBar, false);
+		new RectangleUIComponentBackground(inputBar, handlers, Color.WHITE, Color.BLACK);
+		
 		//new SpriteMessageBoxInputBar(box, new Vector3D(10, 12), testFont, Color.WHITE, 
 		//		15, SpriteBank.getSprite("test", "button"));
 		

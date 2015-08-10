@@ -1,9 +1,6 @@
 package gateway_ui;
 
-import genesis_event.Drawable;
-import genesis_event.HandlerRelay;
 import genesis_util.HelpMath;
-import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 
 import java.awt.Color;
@@ -14,15 +11,10 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
-import java.awt.geom.AffineTransform;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.List;
-
-import omega_util.SimpleGameObject;
-import omega_util.Transformable;
-import omega_util.Transformation;
 
 /**
  * TextDrawer draws text over a certain area. The text is broken into lines and paragraphs.
@@ -30,23 +22,15 @@ import omega_util.Transformation;
  * @author Mikko Hilpinen
  * @since 12.3.2014
  */
-public class TextDrawer extends SimpleGameObject implements Drawable, UIComponent
+public class TextDrawer
 {
-	// TODO: Consider making three separate classes like with the spriteDrawers
-	// drawing, dependent, independent
-	
 	// ATTRIBUTES	------------------------------------------------------
 	
 	private List<ParagraphDrawer> paragraphs;
 	private Font font;
 	private Color color;
-	private int depth;
 	private String paragraphSeparator;
-	private Vector3D dimensions, margins;
-	
-	private Transformation transformation;
-	private Transformable anchor;
-	private StateOperator isVisibleOperator;
+	private Vector3D dimensions, margins, origin;
 	
 	
 	// CONSTRUCTOR	------------------------------------------------------
@@ -55,105 +39,82 @@ public class TextDrawer extends SimpleGameObject implements Drawable, UIComponen
 	 * Creates a new textDrawer that can be used to draw text with the given 
 	 * parameters
 	 * 
-	 * @param position The position of the text's origin
 	 * @param text The text that will be drawn (can be changed later)
 	 * @param paragraphSeparator The string that will indicate a paragraph change (null if 
 	 * only a single paragraph is used)
 	 * @param font The font with which the text will be drawn
 	 * @param textColor The color with which the text will be drawn
 	 * @param dimensions The size of the area on which the text is displayed, including 
-	 * margins. The real text area may be higher or lower depending on the text amount.
+	 * margins. The real text area may be higher or shorter depending on the text amount.
 	 * @param margins The margins placed inside the text area
-	 * @param initialDrawingDepth The drawing depth used for drawing the text
-	 * @param handlers The handlers that will handle the drawer
+	 * @param origin The relative origin of the text area
 	 */
-	public TextDrawer(Vector3D position, String text, String paragraphSeparator, Font font, 
-			Color textColor, Vector3D dimensions, Vector3D margins, 
-			int initialDrawingDepth, HandlerRelay handlers)
-	{	
-		super(handlers);
-		
+	public TextDrawer(String text, String paragraphSeparator, Font font, 
+			Color textColor, Vector3D dimensions, Vector3D margins, Vector3D origin)
+	{
 		// Initializes attributes
-		this.depth = initialDrawingDepth;
+		
 		this.font = font;
 		this.color = textColor;
 		this.dimensions = dimensions;
+		this.origin = origin;
 		this.margins = margins;
-		this.transformation = new Transformation(position);
-		this.isVisibleOperator = new StateOperator(true, true);
 		this.paragraphSeparator = paragraphSeparator;
-		this.anchor = null;
 		
 		setText(text);
 	}
 	
 	
 	// IMPLEMENTED METHODS	----------------------------------------------
-	
-	@Override
-	public Transformation getTransformation()
-	{
-		if (this.anchor != null)
-			return this.anchor.getTransformation();
-		
-		return this.transformation;
-	}
 
-	@Override
-	public void setTrasformation(Transformation t)
-	{
-		this.transformation = t;
-	}
-
-	@Override
-	public void drawSelf(Graphics2D g2d)
+	/**
+	 * Draws the text according to the drawer's settings
+	 * @param g2d The graphics object that does the drawing
+	 */
+	public void drawText(Graphics2D g2d)
 	{
 		// Only draws itself if the scaling is not 0
-		Vector3D scaling = getTransformation().getScaling();
-		if (HelpMath.areApproximatelyEqual(scaling.getFirst(), 0) || 
-				HelpMath.areApproximatelyEqual(scaling.getSecond(), 0))
+		if (HelpMath.areApproximatelyEqual(g2d.getTransform().getScaleX(), 0) || 
+				HelpMath.areApproximatelyEqual(g2d.getTransform().getScaleY(), 0))
 			return;
-		
-		AffineTransform lastTransform = g2d.getTransform();
-		getTransformation().transform(g2d);
 		
 		g2d.setColor(this.color);
 		
-		int h = this.margins.getSecondInt();
+		int h = this.margins.getSecondInt() - this.origin.getSecondInt();
+		int x = this.margins.getFirstInt() - this.origin.getFirstInt();
 		for (ParagraphDrawer paragraph : this.paragraphs)
 		{
-			h += paragraph.drawText(g2d, this.margins.getFirstInt(), h) + 10;
+			h += paragraph.drawText(g2d, x, h) + 10;
 		}
-		
-		g2d.setTransform(lastTransform);
-	}
-
-	@Override
-	public int getDepth()
-	{
-		return this.depth;
-	}
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
-	}
-	
-	@Override
-	public Vector3D getDimensions()
-	{
-		return this.dimensions;
-	}
-
-	@Override
-	public Vector3D getOrigin()
-	{
-		return Vector3D.zeroVector();
 	}
 
 	
 	// GETTERS & SETTERS	----------------------------------------------
+	
+	/**
+	 * @return The size of the text area (including margins)
+	 */
+	public Vector3D getDimensions()
+	{
+		return this.dimensions;
+	}
+	
+	/**
+	 * @return The drawer's relative origin
+	 */
+	public Vector3D getOrigin()
+	{
+		return this.origin;
+	}
+	
+	/**
+	 * Changes the origin used for the drawer
+	 * @param origin The new relative origin
+	 */
+	public void setOrigin(Vector3D origin)
+	{
+		this.origin = origin;
+	}
 	
 	/**
 	 * Changes the text that will be drawn
@@ -179,33 +140,17 @@ public class TextDrawer extends SimpleGameObject implements Drawable, UIComponen
 	/**
 	 * Changes the size of the text area
 	 * @param newDimensions The new size of the area
+	 * @param scaleOrigin Should the relative origin be scaled accordingly?
 	 */
-	public void setDimensions(Vector3D newDimensions)
+	public void setDimensions(Vector3D newDimensions, boolean scaleOrigin)
 	{
+		if (scaleOrigin)
+		{
+			Vector3D scaling = newDimensions.dividedBy(this.dimensions);
+			setOrigin(getOrigin().times(scaling));
+		}
+		
 		this.dimensions = newDimensions;
-	}
-	
-	/**
-	 * Changes the operator that defines whether or not the drawer is visible
-	 * @param operator The new operator used
-	 */
-	public void setIsVisibleStateOperator(StateOperator operator)
-	{
-		this.isVisibleOperator = operator;
-	}
-	
-	
-	// OTHER METHODS	--------------------------
-	
-	/**
-	 * Calling this method anchors this drawer to another object. This means that the text 
-	 * drawer will use that object's transformations.
-	 * @param t The object this drawer will be anchored to (null if the drawer should have 
-	 * it's own transformations (default))
-	 */
-	public void anchorToObject(Transformable t)
-	{
-		this.anchor = t;
 	}
 	
 	

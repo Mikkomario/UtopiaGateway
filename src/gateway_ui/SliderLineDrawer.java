@@ -5,24 +5,23 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
 import genesis_event.Drawable;
+import genesis_event.GenesisHandlerType;
 import genesis_event.HandlerRelay;
+import genesis_util.ConnectedHandled;
 import genesis_util.DependentStateOperator;
-import genesis_util.StateOperator;
 import genesis_util.Vector3D;
-import omega_util.DependentGameObject;
 
 /**
  * This object simply draws a line on a slider, visualizing the slider's area
  * @author Mikko Hilpinen
  * @since 11.7.2015
  */
-public class SliderLineDrawer extends DependentGameObject<AbstractSliderOption<?>> implements
+public class SliderLineDrawer extends ConnectedHandled<AbstractSliderOption<?>> implements
 		Drawable
 {
 	// ATTRIBUTES	---------------------------
 	
 	private Color color;
-	private StateOperator isVisibleOperator;
 	
 	
 	// CONSTRUCTOR	---------------------------
@@ -38,7 +37,10 @@ public class SliderLineDrawer extends DependentGameObject<AbstractSliderOption<?
 		super(slider, handlers);
 		
 		this.color = color;
-		this.isVisibleOperator = new DependentStateOperator(slider.getIsVisibleStateOperator());
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.DRAWABLEHANDLER, 
+				new DependentStateOperator(
+				slider.getHandlingOperators().getShouldBeHandledOperator(
+				GenesisHandlerType.DRAWABLEHANDLER)));
 	}
 	
 	
@@ -61,11 +63,5 @@ public class SliderLineDrawer extends DependentGameObject<AbstractSliderOption<?
 	public int getDepth()
 	{
 		return getMaster().getDepth() + 1;
-	}
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
 	}
 }

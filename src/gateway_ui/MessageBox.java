@@ -9,13 +9,14 @@ import gateway_event.ButtonEvent;
 import gateway_event.ButtonEvent.ButtonEventType;
 import gateway_event.ButtonEventListener;
 import genesis_event.EventSelector;
+import genesis_event.GenesisHandlerType;
 import genesis_event.HandlerRelay;
 import genesis_util.DependentStateOperator;
 import genesis_util.DepthConstants;
+import genesis_util.SimpleHandled;
 import genesis_util.StateOperator;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
-import omega_util.SimpleGameObject;
-import omega_util.Transformation;
 import vision_sprite.Sprite;
 
 /**
@@ -24,11 +25,10 @@ import vision_sprite.Sprite;
  * @author Mikko Hilpinen
  * @since 28.6.2015
  */
-public class MessageBox extends SimpleGameObject implements ButtonEventListener, UIComponent
+public class MessageBox extends SimpleHandled implements ButtonEventListener, UIComponent
 {
 	// ATTRIBUTES	------------------------
 	
-	private TextDrawer textDrawer;
 	private Transformation transformation;
 	private Vector3D margin, dimensions;
 	private Font buttonFont;
@@ -36,8 +36,8 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 	private List<OptionButton> buttons;
 	private HandlerRelay handlers;
 	private InputBar inputBar;
+	private TextDrawer text;
 	
-	private StateOperator isVisibleOperator;
 	private EventSelector<ButtonEvent> selector;
 	
 	
@@ -63,7 +63,6 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		super(handlers);
 		
 		this.transformation = new Transformation(position);
-		this.isVisibleOperator = new StateOperator(true, true);
 		this.margin = margin;
 		this.handlers = handlers;
 		this.buttons = new ArrayList<>();
@@ -72,15 +71,16 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		this.selector = ButtonEvent.createButtonEventSelector(ButtonEventType.RELEASED);
 		this.buttonFont = buttonFont;
 		this.textColor = textColor;
-		this.textDrawer = new TextDrawer(position, message, paragraphSeparator, buttonFont, 
-				textColor, dimensions, margin, getDepth() - 2, handlers);
 		
-		this.textDrawer.setIsDeadStateOperator(new DependentStateOperator(
-				getIsDeadStateOperator()));
-		this.textDrawer.setIsActiveStateOperator(new DependentStateOperator(
-				getIsActiveStateOperator()));
-		this.textDrawer.setIsVisibleStateOperator(new DependentStateOperator(
-				getIsVisibleStateOperator()));
+		this.text = new DependentTextDrawer<MessageBox>(this, getDepth() - 2, handlers, 
+				new TextDrawer(message, paragraphSeparator, buttonFont, textColor, dimensions, 
+				margin, Vector3D.zeroVector())).getTextDrawer();
+		
+		// The messageBox has separate visibility and mouse states
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.DRAWABLEHANDLER, 
+				new StateOperator(true, true));
+		getHandlingOperators().setShouldBeHandledOperator(GenesisHandlerType.MOUSEHANDLER, 
+				new StateOperator(true, true));
 	}
 	
 	
@@ -96,7 +96,6 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 	public void setTrasformation(Transformation t)
 	{
 		this.transformation = t;
-		this.textDrawer.setTrasformation(t);
 		
 		updateInputBarTransformations();
 		updateButtonTransformations();
@@ -110,21 +109,9 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 	}
 
 	@Override
-	public StateOperator getListensToButtonEventsOperator()
-	{
-		return getIsActiveStateOperator();
-	}
-
-	@Override
 	public EventSelector<ButtonEvent> getButtonEventSelector()
 	{
 		return this.selector;
-	}
-	
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return this.isVisibleOperator;
 	}
 	
 	@Override
@@ -158,6 +145,15 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 	
 	
 	// OTHER METHODS	--------------------------
+	
+	/**
+	 * Changes the message shown on the box
+	 * @param message The new message shown on the box
+	 */
+	public void setMessage(String message)
+	{
+		this.text.setText(message);
+	}
 	
 	/**
 	 * Adds a button to the box
@@ -194,11 +190,6 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		
 		if (killOnRelease)
 			button.getListenerHandler().add(this);
-		
-		// The new button's state becomes dependent from the box
-		button.setIsActiveStateOperator(new DependentStateOperator(getIsActiveStateOperator()));
-		button.setIsDeadStateOperator(new DependentStateOperator(getIsDeadStateOperator()));
-		button.setIsVisibleStateOperator(new DependentStateOperator(getIsVisibleStateOperator()));
 		
 		// Also updates the button transformations
 		updateButtonTransformations();
@@ -269,10 +260,8 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		this.inputBar = inputBar;
 		inputBar.setDimensions(new Vector3D(getDimensions().getFirstInt() - 
 				this.margin.getFirstInt() * 2, inputBar.getDimensions().getSecond()));
-		inputBar.setIsActiveStateOperator(new DependentStateOperator(getIsActiveStateOperator()));
-		inputBar.setIsDeadStateOperator(new DependentStateOperator(getIsDeadStateOperator()));
-		inputBar.setIsVisibleStateOperator(new DependentStateOperator(getIsVisibleStateOperator()));
 		inputBar.setDepth(getDepth() - 4);
+		inputBar.makeDependentFrom(this);
 		
 		updateInputBarTransformations();
 	}
@@ -329,7 +318,7 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		
 		private AbstractButton button;
 		private Vector3D relativePosition, scaling;
-		private TextDrawer text;
+		private SimpleTextDrawerObject text;
 		
 		
 		// CONSTRUCTOR	--------------------------
@@ -339,20 +328,14 @@ public class MessageBox extends SimpleGameObject implements ButtonEventListener,
 		{
 			this.scaling = new Vector3D(1, 1);
 			this.button = button;
-			this.text = new TextDrawer(Vector3D.zeroVector(), message, null, 
-					MessageBox.this.buttonFont, MessageBox.this.textColor, getDimensions(), 
-					margin, getDepth() - 2, MessageBox.this.handlers);
+			this.text = new SimpleTextDrawerObject(getHandlers(), Vector3D.zeroVector(), 
+					getDepth() - 2, new TextDrawer(message, null, MessageBox.this.buttonFont, 
+					MessageBox.this.textColor, getDimensions(), margin, Vector3D.zeroVector()));
 			
-			StateOperator dependentActive = new DependentStateOperator(
-					getIsActiveStateOperator());
-			StateOperator dependentDead = new DependentStateOperator(getIsDeadStateOperator());
-			StateOperator dependentVisible = new DependentStateOperator(getIsVisibleStateOperator());
-			this.button.setIsActiveStateOperator(dependentActive);
-			this.button.setIsDeadStateOperator(dependentDead);
-			this.button.setIsVisibleStateOperator(dependentVisible);
-			this.text.setIsActiveStateOperator(dependentActive);
-			this.text.setIsDeadStateOperator(dependentDead);
-			this.text.setIsVisibleStateOperator(dependentVisible);
+			this.button.makeDependentFrom(MessageBox.this);
+			this.text.setIsDeadOperator(new DependentStateOperator(getIsDeadStateOperator()));
+			this.text.getHandlingOperators().makeDependent(MessageBox.this, 
+					GenesisHandlerType.DRAWABLEHANDLER);
 			
 			reset(relativePosition, maxWidth);
 		}

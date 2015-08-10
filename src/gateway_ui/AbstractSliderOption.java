@@ -2,7 +2,6 @@ package gateway_ui;
 
 import java.util.Collection;
 
-import omega_util.Transformation;
 import gateway_event.ButtonEvent;
 import gateway_event.ButtonEvent.ButtonEventType;
 import gateway_event.ButtonEventListener;
@@ -10,8 +9,7 @@ import genesis_event.EventSelector;
 import genesis_event.HandlerRelay;
 import genesis_event.MouseEvent;
 import genesis_event.MouseListener;
-import genesis_util.DependentStateOperator;
-import genesis_util.StateOperator;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
 
 /**
@@ -59,12 +57,6 @@ public abstract class AbstractSliderOption<T> extends AbstractOption<T> implemen
 		
 		this.sliderButton = new OptionButton(sliderHandle);
 		sliderHandle.getListenerHandler().add(this);
-		sliderHandle.setIsActiveStateOperator(new DependentStateOperator(
-				getIsActiveStateOperator()));
-		sliderHandle.setIsVisibleStateOperator(new DependentStateOperator(
-				getIsVisibleStateOperator()));
-		sliderHandle.setIsDeadStateOperator(new DependentStateOperator(
-				getIsDeadStateOperator()));
 		
 		this.buttonDragPosition = Vector3D.zeroVector();
 		this.lastMousePosition = Vector3D.zeroVector();
@@ -90,12 +82,6 @@ public abstract class AbstractSliderOption<T> extends AbstractOption<T> implemen
 		// Remembers the mouse coordinates relative to the button
 		this.buttonDragPosition = this.lastMousePosition.minus(
 				this.sliderButton.getButton().getTransformation().getPosition());
-	}
-
-	@Override
-	public StateOperator getListensToButtonEventsOperator()
-	{
-		return getIsActiveStateOperator();
 	}
 
 	@Override
@@ -127,12 +113,6 @@ public abstract class AbstractSliderOption<T> extends AbstractOption<T> implemen
 	}
 
 	@Override
-	public StateOperator getListensToMouseEventsOperator()
-	{
-		return getIsActiveStateOperator();
-	}
-
-	@Override
 	public EventSelector<MouseEvent> getMouseEventSelector()
 	{
 		return this.mouseEventSelector;
@@ -153,7 +133,6 @@ public abstract class AbstractSliderOption<T> extends AbstractOption<T> implemen
 			Vector3D newRelativeSliderPos = getTransformation().inverseTransform(
 					event.getPosition().minus(this.buttonDragPosition));
 			
-			// TODO: Try using rounding instead of casting to int
 			setCurrentIndex((int) Math.round(newRelativeSliderPos.getFirst() * 
 					(getOptionAmount() - 1) / this.sliderWidth));
 			
